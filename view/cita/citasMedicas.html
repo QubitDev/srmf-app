@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Cita Medica</title>
+
+    <link rel="stylesheet" href="cita.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#">Citas</a></li>
+                <li><a href="#">Pacientes</a></li>
+                <li><a href="#">Medicos</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div class="container">
+            <div class="title">
+                <h1>Cita Medica</h1>
+            </div>
+            <div class="register">
+                <form action="/cita" method="POST">
+    
+                    <div  class="form-group">
+                        <label for="descripcion">Descripcion:</label>
+                        <input type="text" id="descripcion" required>
+                    </div>
+                    <div class="gorm-group">
+                        <label for="especialidad">Especialidad:</label>
+                        <input type="text" id="specialidad" required>
+                    </div>
+                    <div class="gorm-group">
+                        <label for="especialista">Medico:</label>
+                        <select id="especialista" name="especialista" required>
+                            <option value="">Seleccione un medico</option>
+                            <option value="">medico 1</option>
+                            <option value="">medico 2</option>
+                            <!-- Listado de medicos -->
+                        </select>
+                    </div>
+                    <div class="gorm-group">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" name="fecha" required>
+                    </div>
+    
+                    <div class="gorm-group">
+                        <label for="hora">Hora de cita:</label>
+                        <input type="time" id="hora" name="hora" required><br><br>
+                    </div>
+                </form>
+                <div class="button">
+                    <button type="submit">Reservar Cita</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
