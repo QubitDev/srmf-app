@@ -10,6 +10,5 @@
         "statusBarItem.remoteBackground": "#42b883",
         "statusBarItem.remoteForeground": "#15202b"
     },
-
-    "material-icon-theme.activeIconPack": "nest",
+    "material-icon-theme.activeIconPack": "nest"
 }
