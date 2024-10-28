@@ -1,0 +1,68 @@
+erDiagram
+    User ||--o| Paciente : tiene
+    User ||--o| Doctor : tiene
+    Paciente ||--o{ cita : realiza
+    Doctor ||--o{ cita : atiende
+    Doctor ||--o{ consultorio : tiene
+    Doctor ||--o{ disponibilidad_doctor : tiene
+    Doctor }o--|| especialidad : pertenece
+
+    User {
+        int id PK
+        string email UK
+        string password
+        enum role
+        datetime deletedAt
+    }
+
+    Paciente {
+        int id_paciente PK
+        int userId FK
+        string nombre
+        string apellido
+        date fecha_nacimiento
+        string celular
+        string direccion
+        datetime fecha_de_registro
+    }
+
+    Doctor {
+        int id_doctor PK
+        int userId FK
+        string nombre
+        string apellido
+        int id_especialidad FK
+        string celular
+        date fecha_de_contratacion
+    }
+
+    cita {
+        int id_cita PK
+        int id_paciente FK
+        int id_doctor FK
+        datetime fecha_cita
+        time hora_inicio
+        time hora_final
+        string estado
+    }
+
+    disponibilidad_doctor {
+        int id_disponibilidad PK
+        int id_doctor FK
+        string dia_semana
+        time hora_inicio
+        time hora_fin
+    }
+
+    consultorio {
+        int id_consultorio PK
+        int id_doctor FK
+        string nombre
+        string ubicacion
+    }
+
+    especialidad {
+        int id_especialidad PK
+        string nombre
+        string descripcion
+    }

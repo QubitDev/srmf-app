@@ -19,13 +19,13 @@ export class AuthController {
         return this.authService.register(registerDto);
     }
 
-    @Post('login')
+  /*   @Post('login')
     login(
         @Body()
         loginDto: LoginDto,
     ) {
         return this,this.authService.login(loginDto);
-    }
+    } */
 
     @Get('profile')
     @UseGuards(AuthGuard)

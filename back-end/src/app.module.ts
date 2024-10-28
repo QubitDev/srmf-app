@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DoctorModule } from './doctor/doctor.module';
 import { PacienteModule } from './paciente/paciente.module';
-import { CitaModule } from './cita/cita.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/user.module';
+import { CitasModule } from './citas/citas.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -15,6 +16,6 @@ import { AuthModule } from './auth/auth.module';
     database: 'srfm_db',
     autoLoadEntities:true,
     synchronize: true,
-  }), DoctorModule, PacienteModule, CitaModule, AuthModule],
+  }), DoctorModule, PacienteModule, AuthModule, UsersModule, CitasModule],
 })
 export class AppModule {}

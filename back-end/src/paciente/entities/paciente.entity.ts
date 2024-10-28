@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, DeleteDateColumn, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity()
 export class Paciente {
@@ -17,15 +18,9 @@ export class Paciente {
     @Column({ length: 20, nullable: false })
     celular: string;
 
-    @Column('text', { nullable: false, unique: true })
-    email: string;
-
-    @Column({nullable: false})
-    password: string;
-
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    fecha_de_registro: Date;
-
-    @DeleteDateColumn()
-    deletedAt: Date;
+    @OneToOne(() => User, user => user.paciente, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn()
+    user: User;
 }

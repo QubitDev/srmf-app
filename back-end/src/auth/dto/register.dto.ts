@@ -26,20 +26,15 @@ export class RegisterDto {
     @Transform(({value})=> value.trim())
     @IsString()
     @IsNotEmpty()
-    celular: string;
+    celular: string; 
 
     @IsEmail()
-    @IsNotEmpty()
     email: string;
     
     @Transform(({value})=> value.trim())
     @IsString()
     @MinLength(6)
     password: string;
-
-    @Type(() => Date) 
-    @IsDate()
-    fecha_de_registro: Date;
 
     //@Type(() => Date) 
     //@IsDate()

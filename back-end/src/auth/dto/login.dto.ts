@@ -9,7 +9,6 @@ import {
 
 export class LoginDto {
     @IsEmail()
-    @IsNotEmpty()
     email: string;
     
     @Transform(({value})=> value.trim())

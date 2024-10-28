@@ -18,9 +18,9 @@ export class PacienteService {
     return this.pacienteRepository.save(createPacienteDto);
   }
 
-  findOneByEmail(email: string) {
+  /* findOneByEmail(email: string) {
     return this.pacienteRepository.findOneBy({ email });
-  }
+  } */
 
   findAll() {
     return `This action returns all paciente`;

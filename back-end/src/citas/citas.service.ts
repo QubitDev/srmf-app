@@ -3,13 +3,13 @@ import { CreateCitaDto } from './dto/create-cita.dto';
 import { UpdateCitaDto } from './dto/update-cita.dto';
 
 @Injectable()
-export class CitaService {
+export class CitasService {
   create(createCitaDto: CreateCitaDto) {
     return 'This action adds a new cita';
   }
 
   findAll() {
-    return `This action returns all cita`;
+    return `This action returns all citas`;
   }
 
   findOne(id: number) {
