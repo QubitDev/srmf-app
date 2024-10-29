@@ -4,12 +4,13 @@ import { UsersController } from './users.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { DoctorModule } from 'src/doctor/doctor.module';
-import { PacienteModule } from 'src/paciente/paciente.module';
+import { SpecialtiesModule } from 'src/specialties/specialties.module';
+/*import { PatientModule } from 'src/patient/patient.module'; */
 
 @Module({
   imports: [
-    PacienteModule,
     DoctorModule,
+    SpecialtiesModule,
     TypeOrmModule.forFeature([User])
   ],
   controllers: [UsersController],

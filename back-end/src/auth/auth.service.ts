@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { PacienteService } from '../paciente/paciente.service';
+import { PatientService } from '../patient/patient.service';
 import { RegisterDto } from './dto/register.dto';
 
 import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
+import { UserRole } from '../shared/enums/user-role.enum';
 
 
 @Injectable()
@@ -13,11 +14,11 @@ export class AuthService {
     
     constructor(
         private readonly usersService: UsersService,
-        private readonly pacienteService: PacienteService,
+        private readonly patientService: PatientService,
         private readonly jwtService: JwtService,
     ) { }
 
-    async register({ nombre, apellido, fecha_nacimiento,celular, email, password}: RegisterDto){
+    async register({ name, lastName, phone,document, email, password}: RegisterDto){
 
         const exiistingUser = await this.usersService.findOneByEmail(email)
         
@@ -27,19 +28,22 @@ export class AuthService {
 
         const user = await this.usersService.create(
             {
+                name,
+                lastName,
+                phone,
+                document,
+                role: UserRole.PATIENT,
                 email,
-                password: await bcryptjs.hash(password,10)
+                password: await bcryptjs.hash(password, 10),
+                createdAt:new Date(),
             }
         );
         
 
-        const paciente = await this.pacienteService.create(
+        const paciente = await this.patientService.create(
             {
-                nombre,
-                apellido,
-                fecha_nacimiento,
-                celular,
-                user : user
+                user: user,
+                createdAt: new Date()
             }
         );
 
@@ -48,7 +52,7 @@ export class AuthService {
             user: {
                 id: user.id,
                 email: user.email,
-                //role: user.role
+                role: user.role
             }
         };
     }
@@ -66,56 +70,15 @@ export class AuthService {
             throw new UnauthorizedException('password is wrong');
         }
 
-        const payload = { email: user.email }
+        const payload = { email: user.email , role: user.role}
         const token = await this.jwtService.signAsync(payload);
         
         return {
             token,
-            email
+            user: {
+                email: user.email,
+                role: user.role
+            }
         };
     }
-    
-   /*  async register({ nombre, apellido,fecha_nacimiento,celular, email, password, fecha_de_registro }: RegisterDto){
-
-        const paciente = await this.pacienteService.findOneByEmail(email)
-        
-        if (paciente) {
-            throw new BadRequestException('Email already exists');
-        }
-
-        return await this.pacienteService.create(
-            {
-                nombre,
-                apellido,
-                fecha_nacimiento,
-                celular,
-                email,
-                password: await bcryptjs.hash(password,10),
-                fecha_de_registro
-            }
-        );
-        
-    } */
-
-    /* async login({ email, password}:LoginDto) {
-        const paciente = await this.pacienteService.findOneByEmail(email)
-        
-        if (!paciente) {
-            throw new UnauthorizedException('email is wrong');
-        }
-
-        const isMatch = await bcryptjs.compare(password, paciente.password);
-
-        if (!isMatch) {
-            throw new UnauthorizedException('password is wrong');
-        }
-
-        const payload = { email: paciente.email }
-        const token = await this.jwtService.signAsync(payload);
-        
-        return {
-            token,
-            email
-        };
-    } */
 }

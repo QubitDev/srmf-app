@@ -1,11 +1,14 @@
-import { Doctor } from 'src/doctor/entities/doctor.entity';
-import { Paciente } from 'src/paciente/entities/paciente.entity';
+import { Doctors } from 'src/doctor/entities/doctor.entity';
+import { Patients } from 'src/patient/entities/patient.entity';
+import { UserRole } from 'src/shared/enums';
 import {
     Entity,
     PrimaryGeneratedColumn,
     Column,
     DeleteDateColumn,
-    OneToOne
+    OneToOne,
+    CreateDateColumn,
+    UpdateDateColumn
 } from 'typeorm';
 
 
@@ -14,28 +17,48 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column({ length: 100 })
+    name: string;
+
+    @Column({ length: 100 })
+    lastName: string;
+
+    @Column({ length: 20, nullable: false })
+    phone: string;
+
+    @Column()
+    document: string;
+
+    @Column({
+        type: 'enum',
+        enum: UserRole,
+        default: UserRole.PATIENT
+    })
+    role: UserRole;
+
+
     @Column({ unique: true , nullable: false })
     email: string;
 
     @Column({nullable: false})
     password: string;
 
-    /* @Column({
-        type: 'enum',
-        enum: Role,
-        default: Role.PATIENT
-    })
-    role: Role;*/
 
-    @OneToOne(() => Paciente, paciente => paciente.user, {
+    @OneToOne(() => Patients, paciente => paciente.user, {
         nullable: true
     })
-    paciente: Paciente;
+    paciente: Patients;
 
-    @OneToOne(() => Doctor, doctor => doctor.user, {
+    @OneToOne(() => Doctors, doctor => doctor.user, {
         nullable: true
     })
-    doctor: Doctor; 
+    doctor: Doctors; 
+
+    @CreateDateColumn()
+    createdAt: Date; 
+
+    @UpdateDateColumn()
+    updatedAt: Date; 
 
     @DeleteDateColumn()
     deletedAt: Date; 

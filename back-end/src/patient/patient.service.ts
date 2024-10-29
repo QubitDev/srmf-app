@@ -1,21 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { CreatePacienteDto } from './dto/create-paciente.dto';
-import { UpdatePacienteDto } from './dto/update-paciente.dto';
+import { CreatePatientDto } from './dto/create-patient.dto';
+import { UpdatePatientDto } from './dto/update-patient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Paciente } from './entities/paciente.entity';
+import { Patients } from './entities/patient.entity';
 import { Repository } from 'typeorm';
 
 
 @Injectable()
-export class PacienteService {
+export class PatientService {
 
   constructor(
-    @InjectRepository(Paciente)
-    private readonly pacienteRepository: Repository<Paciente>,
+    @InjectRepository(Patients)
+    private readonly pacienteRepository: Repository<Patients>,
   ){}
   
-  create(createPacienteDto: CreatePacienteDto){
-    return this.pacienteRepository.save(createPacienteDto);
+  create(createPatientDto: CreatePatientDto){
+    return this.pacienteRepository.save(createPatientDto);
   }
 
   /* findOneByEmail(email: string) {
@@ -30,7 +30,7 @@ export class PacienteService {
     return `This action returns a #${id} paciente`;
   }
 
-  update(id: number, updatePacienteDto: UpdatePacienteDto) {
+  update(id: number, updatePatientDto: UpdatePatientDto) {
     return `This action updates a #${id} paciente`;
   }
 

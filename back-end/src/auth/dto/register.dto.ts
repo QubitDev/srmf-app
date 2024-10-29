@@ -12,21 +12,22 @@ export class RegisterDto {
     @Transform(({value})=> value.trim())
     @IsString()
     @IsNotEmpty()
-    nombre: string;
+    name: string;
 
     @Transform(({value})=> value.trim())
     @IsString()
     @IsNotEmpty()
-    apellido: string;
-
-    @Type(() => Date) 
-    @IsDate()
-    fecha_nacimiento: Date;
+    lastName: string;
 
     @Transform(({value})=> value.trim())
     @IsString()
     @IsNotEmpty()
-    celular: string; 
+    phone: string; 
+
+    @Transform(({ value }) => value.trim())
+    @IsString()
+    @IsNotEmpty()
+    document: string;
 
     @IsEmail()
     email: string;
@@ -35,8 +36,4 @@ export class RegisterDto {
     @IsString()
     @MinLength(6)
     password: string;
-
-    //@Type(() => Date) 
-    //@IsDate()
-    deletedAt?: Date;
 }

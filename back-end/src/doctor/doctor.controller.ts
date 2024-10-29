@@ -9,7 +9,7 @@ export class DoctorController {
 
   @Post()
   create(@Body() createDoctorDto: CreateDoctorDto) {
-    return this.doctorService.create(createDoctorDto);
+    return this.doctorService.createDoctor(createDoctorDto);
   }
 
   @Get()
