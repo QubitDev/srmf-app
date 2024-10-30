@@ -1,0 +1,14 @@
+{
+  "name": "srfm-app",
+  "version": "0.0.1",
+  "description": "App web de reserva de fichas medicas",
+  "author": "Encinas Quisè Jhonatan, Tolaba Daniel Tomas Simeon",
+  "private": true,
+  "dependencies": {
+    "@nestjs/cli": "^10.4.5",
+    "@nestjs/typeorm": "^10.0.2",
+    "@types/pg": "^8.11.10",
+    "pg": "^8.13.0",
+    "typeorm": "^0.3.20"
+  }
+}

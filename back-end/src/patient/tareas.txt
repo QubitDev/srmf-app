@@ -1,0 +1,6 @@
+1. registrar usuario si no existe en la db post
+2. validar al usuario con el email
+3. aumentar contraseña a la tabla paciente
+4. realizar login: enviar email y constraseña, verificar para crear un token de acceso POST
+5. crear un token de acceso para el usuario
+6. verificar el token de acceso para el usuario
