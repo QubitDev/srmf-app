@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -18,8 +17,7 @@ export class LoginComponent {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -46,30 +44,8 @@ export class LoginComponent {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-
-      this.authService.login(email, password).subscribe({
-        next: (response) => {
-          // Redirigir según el rol
-          switch (response.user.role) {
-            case 'admin':
-              this.router.navigate(['/dashboard/admin']);
-              break;
-            case 'doctor':
-              this.router.navigate(['/dashboard/doctor']);
-              break;
-            case 'patient':
-              this.router.navigate(['/dashboard/patient']);
-              break;
-            default:
-              this.loginError = 'Rol no válido';
-          }
-        },
-        error: (error) => {
-          this.loginError = 'Credenciales inválidas';
-          console.error('Error de login:', error);
-        }
-      });
+      // Por ahora, haremos una redirección directa al dashboard
+      this.router.navigate(['/dashboard/patient']);
     } else {
       this.markFormGroupTouched(this.loginForm);
     }
