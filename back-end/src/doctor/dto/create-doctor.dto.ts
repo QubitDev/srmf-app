@@ -1,5 +1,5 @@
 import { Specialty } from "src/specialties/entities/specialty.entity";
-import { User } from "src/users/entities/user.entity";
+import { User } from "../../users/entities/user.entity";
 
 export class CreateDoctorDto {
 
