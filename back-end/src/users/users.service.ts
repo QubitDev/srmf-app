@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
 
 import { CreateUserDto } from './dto/create-users.dto';
@@ -25,7 +25,13 @@ export class UsersService {
     return this.userRepository.save(createUserDto);
   }
 
-  async registerDoctor({name, lastName, phone,document, email, password, specialty, licenseNumber,consultingRoom}: RegisterDoctorDto) {
+  async registerDoctor({ name, lastName, phone, document, email, password, specialty, licenseNumber, consultingRoom }: RegisterDoctorDto) {
+    const exiistingUser = await this.findOneByEmail(email)
+        
+    if (exiistingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+    
     const user = await this.userRepository.save({
       name,
       lastName,
@@ -62,7 +68,7 @@ export class UsersService {
   }
 
   findAll() {
-    return `This action returns all user`;
+    return this.userRepository.find();
   }
 
   findOne(id: number) {
