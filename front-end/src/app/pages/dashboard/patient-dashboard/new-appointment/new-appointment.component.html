@@ -1,0 +1,57 @@
+<div class="new-appointment-container"></div>
+  <h2>Agendar Nueva Cita</h2>
+
+  <form [formGroup]="appointmentForm" (ngSubmit)="onSubmit()" class="appointment-form">
+    <div class="form-group">
+      <label for="specialty">Especialidad</label>
+      <select id="specialty" formControlName="specialty" class="form-control">
+        <option value="">Selecciona una especialidad</option>
+        <option *ngFor="let specialty of specialties" [value]="specialty">
+          {{specialty}}
+        </option>
+      </select>
+      <div class="error-message" *ngIf="appointmentForm.get('specialty')?.touched && appointmentForm.get('specialty')?.invalid">
+        Por favor selecciona una especialidad
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="date">Fecha</label>
+      <input type="date" id="date" formControlName="date" class="form-control">
+      <div class="error-message" *ngIf="appointmentForm.get('date')?.touched && appointmentForm.get('date')?.invalid">
+        Por favor selecciona una fecha
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="time">Hora</label>
+      <select id="time" formControlName="time" class="form-control">
+        <option value="">Selecciona una hora</option>
+        <option *ngFor="let time of availableTimes" [value]="time">
+          {{time}}
+        </option>
+      </select>
+      <div class="error-message" *ngIf="appointmentForm.get('time')?.touched && appointmentForm.get('time')?.invalid">
+        Por favor selecciona una hora
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Motivo de la consulta</label>
+      <textarea
+        id="description"
+        formControlName="description"
+        class="form-control"
+        rows="4"
+        placeholder="Describe brevemente el motivo de tu consulta">
+      </textarea>
+      <div class="error-message" *ngIf="appointmentForm.get('description')?.touched && appointmentForm.get('description')?.invalid">
+        Por favor describe el motivo de tu consulta (mínimo 10 caracteres)
+      </div>
+    </div>
+
+    <button type="submit" class="submit-button" [disabled]="appointmentForm.invalid">
+      Agendar Cita
+    </button>
+  </form>
+

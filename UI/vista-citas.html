@@ -42,3 +42,47 @@
     <script src="/vista-citas.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Calendar</title>
+    <link rel="stylesheet" href="/vista-citas.css">
+</head>
+<body>
+    <div class="container">
+        <div class="calendar">
+            <div class="calendar-header">
+                <button id="prevMonth">&lt;</button>
+                <h2 id="currentMonth">September 2024</h2>
+                <button id="nextMonth">&gt;</button>
+            </div>
+            <div class="calendar-body" id="calendarBody"></div>
+        </div>
+        <div class="appointments">
+            <h2 id="selectedDate">Thursday, September 26, 2024</h2>
+            <button id="createAppointment">Create</button>
+            <div id="appointmentList"></div>
+        </div>
+    </div>
+
+    <div id="appointmentModal" class="modal">
+        <div class="modal-content">
+            <h2>Create Appointment</h2>
+            <form id="appointmentForm">
+                <label for="appointmentTime">Time:</label>
+                <input type="time" id="appointmentTime" required>
+                
+                <label for="appointmentTitle">Title:</label>
+                <input type="text" id="appointmentTitle" required>
+                
+                <button type="submit">Save</button>
+                <button type="button" id="closeModal">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/vista-citas.js"></script>
+</body>
+</html>
