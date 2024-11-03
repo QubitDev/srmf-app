@@ -5,8 +5,8 @@ import { RegisterDto } from './dto/register.dto';
 import * as bcryptjs from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
-import { UserRole } from '../shared/enums/user-role.enum';
+import { UsersService } from '../users/users.service';
+import { UserRole } from '../common/enums/user-role.enum';
 
 
 @Injectable()
@@ -32,7 +32,7 @@ export class AuthService {
                 lastName,
                 phone,
                 document,
-                role: UserRole.PATIENT,
+                role: UserRole.ADMIN,
                 email,
                 password: await bcryptjs.hash(password, 10),
                 createdAt:new Date(),
@@ -58,7 +58,7 @@ export class AuthService {
     }
 
     async login({ email, password }: LoginDto) { 
-        const user = await this.usersService.findOneByEmail(email)
+        const user = await this.usersService.findOneByEmailWithPassword(email)
         
         if (!user) {
             throw new UnauthorizedException('email is wrong');

@@ -7,7 +7,7 @@ import { UsersModule } from './users/user.module';
 import { SpecialtiesModule } from './specialties/specialties.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { DoctorSchedulesModule } from './doctor-schedules/doctor-schedules.module';
-import { User } from './users/entities/user.entity';
+import { Users } from './users/entities/user.entity';
 import { Appointment } from './appointments/entities/appointment.entity';
 import { Specialty } from './specialties/entities/specialty.entity';
 import { Patients } from './patient/entities/patient.entity';
@@ -22,7 +22,7 @@ import { Doctors } from './doctor/entities/doctor.entity';
     password: 'jhona',
     database: 'srfm_db',
     entities: [
-      User,
+      Users,
       Doctors,
       Patients, 
       Specialty,

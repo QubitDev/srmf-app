@@ -1,6 +1,7 @@
-import { Doctors } from 'src/doctor/entities/doctor.entity';
-import { Patients } from 'src/patient/entities/patient.entity';
-import { UserRole } from 'src/shared/enums';
+
+import { Doctors } from '../../doctor/entities/doctor.entity';
+import { Patients } from '../../patient/entities/patient.entity';
+import { UserRole } from 'src/common/enums';
 import {
     Entity,
     PrimaryGeneratedColumn,
@@ -13,9 +14,9 @@ import {
 
 
 @Entity()
-export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+export class Users {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @Column({ length: 100 })
     name: string;
@@ -40,16 +41,18 @@ export class User {
     @Column({ unique: true , nullable: false })
     email: string;
 
-    @Column({nullable: false})
+    @Column({nullable: false, select:false})
     password: string;
 
 
-    @OneToOne(() => Patients, paciente => paciente.user, {
+    @OneToOne(() => Patients, (patient) => patient.user, {
+        cascade: true,
         nullable: true
     })
-    paciente: Patients;
+    patient: Patients;
 
     @OneToOne(() => Doctors, doctor => doctor.user, {
+        cascade: true,
         nullable: true
     })
     doctor: Doctors; 

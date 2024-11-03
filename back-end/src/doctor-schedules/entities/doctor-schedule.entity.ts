@@ -21,8 +21,9 @@ export class DoctorSchedule {
     @Column({ name: 'is_available', default: true })
     isAvailable: boolean;
     
-    @ManyToOne(() => Doctors, (doctor) => doctor.schedules, {
-        onDelete: 'CASCADE'
+    @ManyToOne(() => Doctors, (doctor) => doctor.id, {
+        onDelete: 'CASCADE',
+        eager:true,
     })
     @JoinColumn({ name: 'doctor_id' })
     doctor: Doctors;
