@@ -1,8 +1,13 @@
-import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post} from '@nestjs/common';
+
+
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthGuard } from './guard/auth.guard';
+import { UserRole } from 'src/common/enums';
+import { Auth } from './decorators/auth.decorator';
+import { ActiveUser } from 'src/common/decorators/active-user.decorator';
+import { UserActiveInterface } from 'src/common/interface/user-active.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -28,18 +33,11 @@ export class AuthController {
     }
 
     @Get('profile')
-    @UseGuards(AuthGuard)
+    @Auth(UserRole.ADMIN)
     getProfile(
-        @Request() req
+        @ActiveUser() user:UserActiveInterface
     ) {
-        return req.paciente;
+        return user;
     }
 
-    @Get('profile')
-    @UseGuards(AuthGuard)
-    getProfileDoctor(
-        @Request() req
-    ) {
-        return req.doctor;
-    }
 }

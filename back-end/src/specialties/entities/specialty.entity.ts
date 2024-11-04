@@ -5,8 +5,8 @@ import { Doctors } from '../../doctor/entities/doctor.entity';
 
 @Entity()
 export class Specialty {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
     @OneToMany(() => Doctors, doctor => doctor.specialty)
     doctors: Doctors[];

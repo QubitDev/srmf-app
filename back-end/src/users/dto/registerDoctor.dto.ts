@@ -11,7 +11,7 @@ import { Transform, Type } from "class-transformer";
 
 import { Doctors } from "src/doctor/entities/doctor.entity";
 import { Patients } from "src/patient/entities/patient.entity";
-import { UserRole } from "src/shared/enums";
+import { UserRole } from "src/common/enums";
 
 export class RegisterDoctorDto {
     

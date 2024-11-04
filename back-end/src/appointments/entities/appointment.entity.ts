@@ -2,10 +2,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Doctors } from '../../doctor/entities/doctor.entity';
 import { Patients } from '../../patient/entities/patient.entity';
-import { AppointmentStatus } from 'src/shared/enums/appointment-status.enum';
-
-
-
+import { AppointmentStatus } from '../../common/enums/appointment-status.enum';
 
 @Entity('appointments')
 export class Appointment {
@@ -14,14 +11,18 @@ export class Appointment {
     
     @Column({ name: 'appointment_date' })
     appointmentDate: Date;
+
+    @Column()
+    appointmentTime: string;
     
     @Column({
         type: 'enum',
         enum: AppointmentStatus,
+        default: AppointmentStatus.PENDING,
     })
     status: AppointmentStatus;
     
-    @Column()
+    @Column({ type: 'text', nullable: true })
     reason: string;
     
     @CreateDateColumn({ name: 'created_at' })
@@ -30,11 +31,20 @@ export class Appointment {
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
     
-    @ManyToOne(() => Patients, patient => patient.appointments)
+    @ManyToOne(() => Patients, patient => patient.appointments, {
+        eager: true,
+        nullable: false,  
+        onDelete: 'CASCADE' 
+    })
     @JoinColumn({ name: 'patient_id' })
     patient: Patients;
+
     
-    @ManyToOne(() => Doctors, doctor => doctor.appointments)
+    @ManyToOne(() => Doctors, doctor => doctor.appointments, {
+        eager: true,
+        nullable: false, 
+        onDelete: 'CASCADE'  
+    })
     @JoinColumn({ name: 'doctor_id' })
     doctor: Doctors;
 }

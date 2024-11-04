@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctors } from './entities/doctor.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class DoctorService {
@@ -15,19 +16,64 @@ export class DoctorService {
     return this.doctorRepository.save(createDoctorDto);
   }
 
-  findAll() {
-    return `This action returns all doctor`;
+  async findAll() {
+    return await this.doctorRepository.find({
+      relations: ['user', 'specialty', 'schedules', 'appointments']
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} doctor`;
+  async findOne(id: string) {
+    return await this.doctorRepository.findOne({
+      where: { id },
+      relations: ['user', 'specialty', 'schedules', 'appointments']
+    });
   }
 
-  update(id: number, updateDoctorDto: UpdateDoctorDto) {
-    return `This action updates a #${id} doctor`;
+
+  async getDoctorsBySpecialty(specialtyId: string): Promise<Doctors[]> {
+    return await this.doctorRepository.find({
+      where: { 
+        specialty: { id: specialtyId } 
+      },
+      relations: {
+        user: true,
+        schedules: true
+      }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} doctor`;
+  async getDoctorSchedule(doctorId: string, date: string){
+    const doctor = await this.doctorRepository
+      .createQueryBuilder('doctor')
+      .innerJoinAndSelect('doctor.schedules', 'schedule')
+      .where('doctor.id = :doctorId', { doctorId })
+      .getOne()
+    
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
+    const dayOfWeek = new Date(date).getDay();
+    const schedule = doctor.schedules.find(s => s.dayOfWeek === dayOfWeek)
+
+    if (!schedule) {
+      throw new NotFoundException('No schedule available for this day');
+    }
+
+    return this.generateTimeSlots(schedule.startTime, schedule.endTime);
+  }
+  
+  private generateTimeSlots(startTime: string, endTime: string): string[] {
+    const slots: string[] = [];
+    const start = new Date(`2000-01-01 ${startTime}`);
+    const end = new Date(`2000-01-01 ${endTime}`);
+    const interval = 30;
+
+    while (start < end) {
+      slots.push(start.toTimeString().slice(0, 5));
+      start.setMinutes(start.getMinutes() + interval);
+    }
+
+    return slots;
   }
 }

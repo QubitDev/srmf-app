@@ -1,9 +1,10 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { DoctorSchedulesModule } from '../doctor-schedules/doctor-schedules.module';
+
 import { DoctorService } from './doctor.service';
 import { DoctorController } from './doctor.controller';
 import { Doctors } from './entities/doctor.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DoctorSchedulesModule } from '../doctor-schedules/doctor-schedules.module';
 
 @Module({
   imports: [

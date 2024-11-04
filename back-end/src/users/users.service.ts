@@ -1,22 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
+import { Repository } from 'typeorm';
 
 import { CreateUserDto } from './dto/create-users.dto';
 import { UpdateUserDto } from './dto/update-users.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
-import { DoctorService } from 'src/doctor/doctor.service';
-import { UserRole } from 'src/shared/enums';
+import { Users } from './entities/user.entity';
+import { DoctorService } from '../doctor/doctor.service';
+import { UserRole } from '../common/enums';
 import { RegisterDoctorDto } from './dto/registerDoctor.dto';
-import { SpecialtiesService } from 'src/specialties/specialties.service';
+import { SpecialtiesService } from '../specialties/specialties.service';
 
 @Injectable()
 export class UsersService {
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(Users)
+    private readonly userRepository: Repository<Users>,
     private readonly doctorService: DoctorService,
     private readonly specialtiesService : SpecialtiesService,
   ){}
@@ -25,7 +25,13 @@ export class UsersService {
     return this.userRepository.save(createUserDto);
   }
 
-  async registerDoctor({name, lastName, phone,document, email, password, specialty, licenseNumber,consultingRoom}: RegisterDoctorDto) {
+  async registerDoctor({ name, lastName, phone, document, email, password, specialty, licenseNumber, consultingRoom }: RegisterDoctorDto) {
+    const exiistingUser = await this.findOneByEmail(email)
+        
+    if (exiistingUser) {
+      throw new BadRequestException('Email already exists');
+    }
+    
     const user = await this.userRepository.save({
       name,
       lastName,
@@ -61,19 +67,34 @@ export class UsersService {
     return this.userRepository.findOneBy({email});
   }
 
-  findAll() {
-    return `This action returns all user`;
+  findOneByEmailWithPassword(email:string) {
+    return this.userRepository.findOne({
+      where: {email},
+      select: ['id', 'name', 'email', 'role', 'password']
+    });
   }
 
-  findOne(id: number) {
+  findAll() {
+    return this.userRepository.find();
+  }
+
+
+  async findUserWithRole(email: string) {
+    return await this.userRepository.findOne({
+      where: { email },
+      relations: ['doctor', 'paciente']
+    });
+  }
+
+  findOne(id: string) {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: string, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 }

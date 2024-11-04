@@ -1,8 +1,7 @@
 import { IsOptional } from "class-validator";
-import { User } from "src/users/entities/user.entity";
+import { Users } from "src/users/entities/user.entity";
 
 export class CreatePatientDto {
-
-    user: User;
+    user: Users;
     createdAt: Date; 
 }
