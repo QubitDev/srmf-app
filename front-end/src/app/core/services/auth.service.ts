@@ -1,103 +1,44 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-
-// Interfaces
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'patient' | 'doctor' | 'admin';
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
-export interface ResetPasswordResponse {
-  message: string;
-  success: boolean;
-}
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { User } from '../interfaces/user.interface';
+import { LoginResponse, LoginRequest } from '../interfaces/auth.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'tu-api-url'; // Reemplazar con tu URL real
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser = this.currentUserSubject.asObservable();
+  private readonly API_URL = 'http://localhost:3000';
+  private http = inject(HttpClient);
+  private router = inject(Router);
 
-  constructor(private http: HttpClient) {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      this.currentUserSubject.next(JSON.parse(savedUser));
-    }
-  }
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  signup(userData: Omit<User, 'id' | 'role'> & { password: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/signup`, userData).pipe(
-      catchError(this.handleError)
-    );
-  }
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, credentials)
 
-  login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password }).pipe(
-      map(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
-        return response;
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  requestPasswordReset(email: string): Observable<ResetPasswordResponse> {
-    return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/auth/forgot-password`, { email }).pipe(
-      catchError(this.handleError)
-    );
   }
 
   logout(): void {
     localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem('user');
     this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Ocurrió un error en el servidor';
-
-    if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Error del backend
-      switch (error.status) {
-        case 400:
-          errorMessage = 'Datos inválidos';
-          break;
-        case 401:
-          errorMessage = 'No autorizado';
-          break;
-        case 404:
-          errorMessage = 'Recurso no encontrado';
-          break;
-        default:
-          errorMessage = 'Error en el servidor';
-      }
-    }
-
-    return throwError(() => new Error(errorMessage));
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
-  isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value;
+  isLoggedIn(): boolean {
+    return !!this.getToken();
   }
 
-  getCurrentUserRole(): string | null {
-    return this.currentUserSubject.value?.role || null;
+  private getUserFromStorage(): User | null {
+    const user = localStorage.getItem('user');
+    return user ? JSON.parse(user) : null;
   }
 }
+

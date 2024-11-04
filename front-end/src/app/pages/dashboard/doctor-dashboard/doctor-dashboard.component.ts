@@ -6,38 +6,44 @@ interface User {
   firstName: string;
   lastName: string;
   profileImage: string;
+  specialty?: string;
 }
 
 @Component({
-  selector: 'app-patient-dashboard',
+  selector: 'app-doctor-dashboard',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  templateUrl: './patient-dashboard.component.html',
-  styleUrl: './patient-dashboard.component.css'
+  templateUrl: './doctor-dashboard.component.html',
+  styleUrl: './doctor-dashboard.component.css'
 })
-export class PatientDashboardComponent {
-  // Propiedades
+export class DoctorDashboardComponent {
   sidebarOpen = true;
   user: User = {
     firstName: 'Juan',
     lastName: 'Pérez',
-    profileImage: '/images/avatar.png'
+    profileImage: '/images/avatar.png',
+    specialty: 'Cardiología'
   };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+    // Cerrar el sidebar en móvil cuando se navega
+    this.router.events.subscribe(() => {
+      if (window.innerWidth <= 768) {
+        this.sidebarOpen = false;
+      }
+    });
+  }
 
-  // Métodos
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
   toggleProfileMenu(): void {
-    // Implementar lógica del menú de perfil
     console.log('Toggle profile menu');
   }
 
   logout(): void {
-    // Por ahora solo navegaremos a la página principal
+    // Por ahora solo navegamos a la página principal
     this.router.navigate(['/']);
   }
 
