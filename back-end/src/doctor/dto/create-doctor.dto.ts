@@ -1,9 +1,9 @@
 import { Specialty } from "src/specialties/entities/specialty.entity";
-import { User } from "src/users/entities/user.entity";
+import { Users } from "../../users/entities/user.entity";
 
 export class CreateDoctorDto {
 
-    user: User;
+    user: Users;
 
     specialty: Specialty;
 

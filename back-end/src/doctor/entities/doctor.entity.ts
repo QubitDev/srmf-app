@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
-import { User } from '../../users/entities/user.entity';
+import { Users } from '../../users/entities/user.entity';
 import { Specialty } from '../../specialties/entities/specialty.entity';
 import { DoctorSchedule } from '../../doctor-schedules/entities/doctor-schedule.entity';
 import { Appointment } from '../../appointments/entities/appointment.entity';
@@ -21,19 +21,26 @@ export class Doctors {
     @UpdateDateColumn({ name: 'updated_at' })
     updatedAt: Date;
     
-    @OneToOne(() => User)
-    @JoinColumn({ name: 'user_id' })
-    user: User;
+    @OneToOne(() => Users, (user) => user.doctor, {
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'user_id', referencedColumnName:'id' })
+    user: Users;
     
-    @ManyToOne(() => Specialty)
-    @JoinColumn({ name: 'specialty_id' })
+    @ManyToOne(() => Specialty, (specialty) => specialty.id, {
+        eager:true,
+    })
+    @JoinColumn({ name: 'specialty_id', referencedColumnName:'id'  })
     specialty: Specialty;
 
     @OneToMany(() => DoctorSchedule, (schedule) => schedule.doctor, {
-        cascade: true
+        cascade: true,
     })
     schedules: DoctorSchedule[];
 
-    @OneToMany(() => Appointment, (appointment) => appointment.doctor)
+    @OneToMany(() => Appointment, (appointment) => appointment.doctor, {
+        cascade: true
+    })
     appointments: Appointment[];
+
 }

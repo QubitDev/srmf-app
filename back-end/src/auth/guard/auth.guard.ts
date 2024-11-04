@@ -1,7 +1,5 @@
-import { VerifyErrors } from './../../../node_modules/@types/jsonwebtoken/index.d';
+
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import * as request from 'supertest';
 
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -31,7 +29,7 @@ export class AuthGuard implements CanActivate {
         }
       );
 
-      request['paciente'] = payload;
+      request.user = payload;
 
     } catch {
       throw new UnauthorizedException();

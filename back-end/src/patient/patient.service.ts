@@ -11,30 +11,42 @@ export class PatientService {
 
   constructor(
     @InjectRepository(Patients)
-    private readonly pacienteRepository: Repository<Patients>,
-  ){}
+    private readonly patientRepository: Repository<Patients>,
+  ) { }
   
-  create(createPatientDto: CreatePatientDto){
-    return this.pacienteRepository.save(createPatientDto);
+  create(createPatientDto: CreatePatientDto) {
+    return this.patientRepository.save(createPatientDto);
   }
 
-  /* findOneByEmail(email: string) {
-    return this.pacienteRepository.findOneBy({ email });
+  async findAll() {
+    return await this.patientRepository.find({
+      relations: ['user', 'appointments']
+    });
+  }
+
+  async findOne(id: string) {
+    return await this.patientRepository.findOne({
+      where: { id: id },
+      relations: ['user', 'appointments']
+    });
+  }
+
+  /* async findOneByEmail(email: string) {
+    return await this.pacienteRepository.findOne({
+      where: { user_email: email },
+      relations: ['user', 'appointments']
+    });
   } */
-
-  findAll() {
-    return `This action returns all paciente`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} paciente`;
-  }
-
-  update(id: number, updatePatientDto: UpdatePatientDto) {
-    return `This action updates a #${id} paciente`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} paciente`;
+  async findByUserEmail(email: string): Promise<Patients> {
+    return await this.patientRepository.findOne({
+      relations: {
+        user: true
+      },
+      where: {
+        user: {
+          email: email
+        }
+      }
+    });
   }
 }
