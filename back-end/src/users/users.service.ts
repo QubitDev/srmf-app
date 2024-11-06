@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
 import { Repository } from 'typeorm';
 
@@ -10,6 +10,7 @@ import { DoctorService } from '../doctor/doctor.service';
 import { UserRole } from '../common/enums';
 import { RegisterDoctorDto } from './dto/registerDoctor.dto';
 import { SpecialtiesService } from '../specialties/specialties.service';
+
 
 @Injectable()
 export class UsersService {
@@ -86,15 +87,47 @@ export class UsersService {
     });
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} user`;
+  async findAllRoleDoctors() {
+    return await this.userRepository.find({
+      where: { role: UserRole.DOCTOR },
+      relations: ['doctor']
+    });
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async findAllRolePatients() {
+    return await this.userRepository.find({
+      where: { role: UserRole.PATIENT },
+      relations: ['patient']
+    });
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} user`;
+  findOneById(id: string) {
+    return this.userRepository.findOneBy({id})
+  }
+
+  async update(id: string, updateUserDto: UpdateUserDto) {
+  
+    const user = await this.findOneById(id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    Object.assign(user, updateUserDto)
+    user.updatedAt = new Date();
+
+    return this.userRepository.save(user);
+  }
+
+  async remove(id: string) {
+    const user = await this.findOneById(id);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  
+    await this.userRepository.softDelete(id);
+  
+    return { message: `User with ID ${id} has been removed` };
   }
 }

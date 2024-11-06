@@ -24,7 +24,7 @@ export class AppointmentsService {
 
   async getAvailableTimeSlots(
     doctorId: string,
-    date: string
+    date: Date
   ): Promise<string[]> {
     const appointmentDate = new Date(date);
     

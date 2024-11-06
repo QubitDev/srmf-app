@@ -62,4 +62,3 @@ CREATE TABLE Cita (
     hora_final TIME NOT NULL,
     estado VARCHAR(50) NOT NULL
 );
-

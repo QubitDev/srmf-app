@@ -12,4 +12,9 @@ export class DoctorSchedulesController {
     return this.doctorSchedulesService.create(createDoctorScheduleDto);
   }
 
+  @Get(':doctorId')
+  findDoctorSchedules(@Param('doctorId') doctorId: string) {
+    return this.doctorSchedulesService.findDoctorSchedules(doctorId);
+  }
+
 }

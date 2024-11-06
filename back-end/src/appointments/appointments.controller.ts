@@ -17,23 +17,23 @@ export class AppointmentsController {
     private readonly specialtyService: SpecialtiesService,
     private readonly doctorService: DoctorService,
   ) { }
-
+/* 
   @Get('specialties')
   async getAllSpecialties() {
       return await this.specialtyService.findAll();
   }
-
-  @Get('doctors/specialty/:specialtyId')
+ */
+/*   @Get('doctors/specialty/:specialtyId')
   async getDoctorsBySpecialty(
     @Param('specialtyId') specialtyId: string
   ) {
     return await this.doctorService.getDoctorsBySpecialty(specialtyId);
   }
-
+ */
   @Get('available-slots')
   async getAvailableTimeSlots(
     @Query('doctorId') doctorId: string,
-    @Query('date') date: string
+    @Query('date') date: Date
   ) {
     return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
   }

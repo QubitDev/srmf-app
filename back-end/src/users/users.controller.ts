@@ -15,7 +15,7 @@ export class UsersController {
     return this.userService.create(createUserDto);
   }
 
-  @Post('register')
+  @Post(':register')
   registerDoctor(@Body() registerDoctorDto: RegisterDoctorDto) {
     return this.userService.registerDoctor(registerDoctorDto);  
   }
@@ -25,9 +25,19 @@ export class UsersController {
     return this.userService.findAll();
   }
 
+  @Get(':doctor')
+  findAllRoleDoctors() {
+    return this.userService.findAllRoleDoctors();
+  }
+
+  @Get(':patient')
+  findAllRolePatients() {
+    return this.userService.findAllRolePatients();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+    return this.userService.findOneById(id);
   }
 
   @Patch(':id')
