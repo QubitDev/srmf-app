@@ -21,9 +21,4 @@ export class DoctorController {
   findOne(@Param('id') id: string) {
     return this.doctorService.findOne(id);
   }
-
-/*   findBySpecialty(specialtyId: number) {
-    
-  } */
-
 }

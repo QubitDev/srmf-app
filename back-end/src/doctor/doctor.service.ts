@@ -11,7 +11,8 @@ export class DoctorService {
   constructor(
     @InjectRepository(Doctors)
     private readonly doctorRepository: Repository<Doctors>,
-  ){}
+  ) { }
+  
   createDoctor(createDoctorDto: CreateDoctorDto) {
     return this.doctorRepository.save(createDoctorDto);
   }

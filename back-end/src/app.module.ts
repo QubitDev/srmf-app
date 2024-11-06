@@ -17,9 +17,9 @@ import { Doctors } from './doctor/entities/doctor.entity';
   imports: [TypeOrmModule.forRoot({
     type: 'postgres',
     host: 'localhost',
-    port: 5432,
-    username: 'encinas',
-    password: 'jhona',
+    port: 5433,
+    username: 'postgres',
+    password: 'postgres',
     database: 'srfm_db',
     entities: [
       Users,
