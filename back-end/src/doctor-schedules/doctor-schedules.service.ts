@@ -40,9 +40,8 @@ export class DoctorSchedulesService {
     });
   }
 
-  async checkAvailability(doctorId: string, date: Date, time: string) {
-    const dayOfWeek = date.getDay();
-    
+  async checkAvailability(doctorId: string, dayOfWeek: Date, time: string) {
+
     const schedule = await this.scheduleRepository.findOne({
       where: {
         doctorId,

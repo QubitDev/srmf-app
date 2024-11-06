@@ -32,7 +32,7 @@ export class AuthService {
                 lastName,
                 phone,
                 document,
-                role: UserRole.PATIENT,
+                role: UserRole.ADMIN,
                 email,
                 password: await bcryptjs.hash(password, 10),
                 createdAt:new Date(),

@@ -87,6 +87,20 @@ export class UsersService {
     });
   }
 
+  async findAllRoleDoctors() {
+    return await this.userRepository.find({
+      where: { role: UserRole.DOCTOR },
+      relations: ['doctor']
+    });
+  }
+
+  async findAllRolePatients() {
+    return await this.userRepository.find({
+      where: { role: UserRole.PATIENT },
+      relations: ['patient']
+    });
+  }
+
   findOneById(id: string) {
     return this.userRepository.findOneBy({id})
   }

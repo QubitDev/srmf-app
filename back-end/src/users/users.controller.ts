@@ -15,7 +15,7 @@ export class UsersController {
     return this.userService.create(createUserDto);
   }
 
-  @Post('register')
+  @Post(':register')
   registerDoctor(@Body() registerDoctorDto: RegisterDoctorDto) {
     return this.userService.registerDoctor(registerDoctorDto);  
   }
@@ -23,6 +23,16 @@ export class UsersController {
   @Get()
   findAll() {
     return this.userService.findAll();
+  }
+
+  @Get(':doctor')
+  findAllRoleDoctors() {
+    return this.userService.findAllRoleDoctors();
+  }
+
+  @Get(':patient')
+  findAllRolePatients() {
+    return this.userService.findAllRolePatients();
   }
 
   @Get(':id')

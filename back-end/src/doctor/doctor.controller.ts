@@ -21,4 +21,19 @@ export class DoctorController {
   findOne(@Param('id') id: string) {
     return this.doctorService.findOne(id);
   }
+
+  @Get('doctors/specialty/:specialtyId')
+  async getDoctorsBySpecialty(
+    @Param('specialtyId') specialtyId: string
+  ) {
+    return await this.doctorService.getDoctorsBySpecialty(specialtyId);
+  }
+
+
+  @Get('specialty-name/:specialtyName')
+  async getDoctorsBySpecialtyName(
+    @Param('specialtyName') specialtyName: string
+  ) {
+    return await this.doctorService.getDoctorsBySpecialtyName(specialtyName);
+  }
 }

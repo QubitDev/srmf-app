@@ -1,18 +1,18 @@
-import { IsNumber, IsString, IsBoolean, Min, Max, IsTimeZone} from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsBoolean, Matches, IsDate} from 'class-validator';
 
 export class CreateDoctorScheduleDto {
     @IsString()
     doctorId: string;
 
-    @IsNumber()
-    @Min(0)
-    @Max(6)
-    dayOfWeek: number;
+    @IsDate()
+    @Type(() => Date)
+    dayOfWeek: Date;
 
-    @IsTimeZone()
+    @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
     startTime: string;
 
-    @IsTimeZone()
+    @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
     endTime: string;
 
     @IsBoolean()
