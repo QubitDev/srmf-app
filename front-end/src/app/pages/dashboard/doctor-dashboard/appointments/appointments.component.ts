@@ -1,3 +1,4 @@
+//src/app/pages/dashboard/doctor-dashboard/appointments/appointments.components.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 

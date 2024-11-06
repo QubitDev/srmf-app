@@ -11,7 +11,7 @@ export class CreateDoctorScheduleDto {
 
     @IsTimeZone()
     startTime: string;
-
+    
     @IsTimeZone()
     endTime: string;
 

@@ -1,7 +1,7 @@
 // src/app/pages/dashboard/interfaces/dashboard-interfaces.ts
 export interface Appointment {
   id: string;
-  date: Date;
+  date: String;
   time: string;
   doctorName: string;
   specialty: string;

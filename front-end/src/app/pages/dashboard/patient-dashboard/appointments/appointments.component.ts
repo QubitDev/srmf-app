@@ -1,17 +1,9 @@
+// src/app/pages/dashboard/patient-dashboard/appointments/appointments.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-interface Appointment {
-  id: string;
-  date: Date;
-  time: string;
-  doctorName: string;
-  specialty: string;
-  consultingRoom: string;
-  description: string;
-  status: 'pending' | 'completed' | 'cancelled';
-}
+import { AppointmentsService } from '../../../../core/services/appointments.service';
+import { Appointment } from '../../interfaces/dashboard-interfaces';
 
 @Component({
   selector: 'app-appointments',
@@ -24,36 +16,31 @@ export class AppointmentsComponent implements OnInit {
   currentMonth: Date = new Date();
   weeks: Date[][] = [];
   selectedDate: Date | null = null;
+  appointments: Appointment[] = [];
 
-  // Datos de ejemplo
-  appointments: Appointment[] = [
-    {
-      id: '1',
-      date: new Date(),
-      time: '10:00',
-      doctorName: 'Dr. Juan Pérez',
-      specialty: 'Cardiología',
-      consultingRoom: 'Consultorio 101',
-      description: 'Control mensual cardíaco',
-      status: 'pending'
-    },
-    {
-      id: '2',
-      date: new Date(new Date().setDate(new Date().getDate() + 5)),
-      time: '15:30',
-      doctorName: 'Dra. María González',
-      specialty: 'Medicina General',
-      consultingRoom: 'Consultorio 203',
-      description: 'Chequeo general',
-      status: 'pending'
-    }
-  ];
+  constructor(private appointmentsService: AppointmentsService) {}
 
   ngOnInit() {
+    console.log('Component initialized');
     this.generateCalendar();
+    this.getAppointments();
+  }
+
+  getAppointments() {
+    console.log('Getting appointments');
+    this.appointmentsService.getAppointments().subscribe(
+      (appointments: Appointment[]) => {
+        console.log('Appointments fetched:', appointments);
+        this.appointments = appointments;
+      },
+      (error) => {
+        console.error('Error fetching appointments:', error);
+      }
+    );
   }
 
   generateCalendar() {
+    console.log('Generating calendar');
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
 
@@ -88,9 +75,11 @@ export class AppointmentsComponent implements OnInit {
       }
       this.weeks.push(currentWeek);
     }
+    console.log('Calendar generated:', this.weeks);
   }
 
   previousMonth() {
+    console.log('Navigating to previous month');
     this.currentMonth = new Date(
       this.currentMonth.getFullYear(),
       this.currentMonth.getMonth() - 1,
@@ -100,6 +89,7 @@ export class AppointmentsComponent implements OnInit {
   }
 
   nextMonth() {
+    console.log('Navigating to next month');
     this.currentMonth = new Date(
       this.currentMonth.getFullYear(),
       this.currentMonth.getMonth() + 1,
@@ -109,18 +99,28 @@ export class AppointmentsComponent implements OnInit {
   }
 
   selectDate(date: Date) {
+    console.log('Selecting date:', date);
     this.selectedDate = new Date(date);
+    console.log('Selected date:', this.selectedDate); // Asegúrate de que el valor se actualiza.
   }
+
 
   getAppointmentsForDate(date: Date): Appointment[] {
-    return this.appointments.filter(appointment =>
+    console.log('Getting appointments for date:', date);
+    const filteredAppointments = this.appointments.filter(appointment =>
       this.isSameDay(new Date(appointment.date), date)
     );
+    console.log('Filtered appointments:', filteredAppointments);  // Verifica los resultados filtrados.
+    return filteredAppointments;
   }
 
+
   hasAppointments(date: Date): boolean {
-    return this.getAppointmentsForDate(date).length > 0;
+    const hasAppointments = this.getAppointmentsForDate(date).length > 0;
+    console.log('Has appointments on', date, ':', hasAppointments);
+    return hasAppointments;
   }
+
 
   isToday(date: Date): boolean {
     return this.isSameDay(date, new Date());
