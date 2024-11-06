@@ -1,17 +1,43 @@
+// src/app/core/interfaces/auth.interface.ts
+
+export enum UserRole {
+  ADMIN = 'ADMIN',
+  DOCTOR = 'DOCTOR',
+  PATIENT = 'PATIENT'
+}
+
 export interface LoginRequest {
-  email: any;
-  password: any;
+  email: string;
+  password: string;
 }
 
 export interface LoginResponse {
-  access_token: string;
-  user: User;
+  token: string;
+  user: {
+    email: string;
+    role: UserRole;
+  }
+}
+
+export interface RegisterRequest {
+  name: string;
+  lastName: string;
+  phone: string;
+  document: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: {
+    id: number;
+    email: string;
+    role: UserRole;
+  }
 }
 
 export interface User {
-  id: number;
   email: string;
-  firstName: string;
-  lastName: string;
-  role: string;
+  role: UserRole;
 }

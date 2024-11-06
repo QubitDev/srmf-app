@@ -1,7 +1,10 @@
+// src/app/pages/dashboard/patient-dashboard/patient-dashboard.component.ts
+
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface User {
   firstName: string;
@@ -24,7 +27,16 @@ export class PatientDashboardComponent {
     profileImage: '/images/avatar.png'
   };
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {
+    // Verificar autenticación
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     // Suscribirse a los eventos de navegación
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -45,7 +57,7 @@ export class PatientDashboardComponent {
   }
 
   logout(): void {
-    this.router.navigate(['/']);
+    this.authService.logout(); // Usar el método logout del AuthService
   }
 
   getCurrentDate(): string {

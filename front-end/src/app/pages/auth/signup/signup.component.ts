@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+// src/app/pages/auth/signup/signup.component.ts
+
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { RegisterRequest } from '../../../core/interfaces/auth.interface';
 
 @Component({
   selector: 'app-signup',
@@ -11,30 +15,76 @@ import { Router } from '@angular/router';
   styleUrl: './signup.component.css'
 })
 export class SignupComponent {
-  signupForm: FormGroup;
+  private fb = inject(FormBuilder);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  signupForm = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    phone: ['', [Validators.required]],
+    document: ['', [Validators.required]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', Validators.required],
+    terms: [false, Validators.requiredTrue]
+  });
+
   showPassword = false;
   showConfirmPassword = false;
+  signupError = '';
+  isSubmitting = false;
 
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.signupForm = this.fb.group({
-      firstName: ['', [Validators.required, Validators.minLength(2)]],
-      lastName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
-      terms: [false, Validators.requiredTrue]
-    }, {
-      validators: this.passwordMatchValidator
-    });
+  passwordsMatch(): boolean {
+    const password = this.signupForm.get('password')?.value || '';
+    const confirmPassword = this.signupForm.get('confirmPassword')?.value || '';
+    return password === confirmPassword && password !== '';
   }
-  // Agregar este método
-  navigateToHome() {
-    this.router.navigate(['/']);
+
+  isFormValid(): boolean {
+    return this.signupForm.valid && this.passwordsMatch();
   }
-  passwordMatchValidator(group: FormGroup) {
-    const password = group.get('password')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { passwordMismatch: true };
+
+  onSubmit() {
+    if (this.isFormValid() && !this.isSubmitting) {
+      this.isSubmitting = true;
+      this.signupError = '';
+
+      const userData: RegisterRequest = {
+        name: this.signupForm.get('firstName')?.value || '',
+        lastName: this.signupForm.get('lastName')?.value || '',
+        phone: this.signupForm.get('phone')?.value || '',
+        document: this.signupForm.get('document')?.value || '',
+        email: this.signupForm.get('email')?.value || '',
+        password: this.signupForm.get('password')?.value || '',
+      };
+
+      // Verificación adicional antes de enviar
+      if (Object.values(userData).some(value => value === '')) {
+        this.signupError = 'Por favor, complete todos los campos';
+        this.isSubmitting = false;
+        return;
+      }
+
+      this.authService.register(userData).subscribe({
+        next: (response) => {
+          console.log('Registro exitoso:', response);
+          this.router.navigate(['/auth/login'], {
+            queryParams: { registered: 'true' }
+          });
+        },
+        error: (error) => {
+          console.error('Error en registro:', error);
+          this.signupError = error.message;
+          this.isSubmitting = false;
+        },
+        complete: () => {
+          this.isSubmitting = false;
+        }
+      });
+    } else {
+      this.markFormGroupTouched(this.signupForm);
+    }
   }
 
   togglePasswordVisibility(field: 'password' | 'confirmPassword') {
@@ -42,15 +92,6 @@ export class SignupComponent {
       this.showPassword = !this.showPassword;
     } else {
       this.showConfirmPassword = !this.showConfirmPassword;
-    }
-  }
-
-  onSubmit() {
-    if (this.signupForm.valid) {
-      console.log('Form submitted:', this.signupForm.value);
-      // Aquí irá la lógica de registro
-    } else {
-      this.markFormGroupTouched(this.signupForm);
     }
   }
 
@@ -65,5 +106,9 @@ export class SignupComponent {
 
   navigateToLogin() {
     this.router.navigate(['/auth/login']);
+  }
+
+  navigateToHome() {
+    this.router.navigate(['/']);
   }
 }

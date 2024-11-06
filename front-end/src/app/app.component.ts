@@ -1,13 +1,19 @@
 // src/app/app.component.ts
+
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: '<router-outlet></router-outlet>'
+  imports: [CommonModule, RouterOutlet],
+  template: `
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+  `
 })
 export class AppComponent {
-  title = 'Sistema de Citas Médicas';
+  title = 'medical-appointments';
 }

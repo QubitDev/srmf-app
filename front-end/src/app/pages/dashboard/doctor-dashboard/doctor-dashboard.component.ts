@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-
+import { AuthService } from '../../../core/services/auth.service';
 interface User {
   firstName: string;
   lastName: string;
@@ -25,7 +25,12 @@ export class DoctorDashboardComponent {
     specialty: 'Cardiología'
   };
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private authService: AuthService) {
+    // Verificar autenticación
+    if (!this.authService.isLoggedIn()) {
+      this.router.navigate(['/auth/login']);
+      return;
+    }
     // Cerrar el sidebar en móvil cuando se navega
     this.router.events.subscribe(() => {
       if (window.innerWidth <= 768) {

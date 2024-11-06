@@ -1,8 +1,11 @@
+// src/app/app.routes.ts
+
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
     path: '',
+    pathMatch: 'full',
     loadComponent: () =>
       import('./pages/landing-page/landing-page.component')
         .then(m => m.LandingPageComponent)
@@ -31,6 +34,11 @@ export const routes: Routes = [
         .then(m => m.PatientDashboardComponent),
     children: [
       {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'appointments'
+      },
+      {
         path: 'appointments',
         loadComponent: () =>
           import('./pages/dashboard/patient-dashboard/appointments/appointments.component')
@@ -52,15 +60,14 @@ export const routes: Routes = [
   },
   {
     path: 'dashboard/doctor',
-    //canActivate: [authGuard],
     loadComponent: () =>
       import('./pages/dashboard/doctor-dashboard/doctor-dashboard.component')
         .then(m => m.DoctorDashboardComponent),
     children: [
       {
         path: '',
-        redirectTo: 'appointments',
-        pathMatch: 'full'
+        pathMatch: 'full',
+        redirectTo: 'appointments'
       },
       {
         path: 'appointments',
@@ -81,10 +88,11 @@ export const routes: Routes = [
             .then(m => m.ProfileComponent)
       }
     ]
+  },
+  {
+    path: '**',
+    redirectTo: ''
   }
 ];
-
-
-
 
 export default routes;
