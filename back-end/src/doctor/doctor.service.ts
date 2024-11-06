@@ -5,13 +5,16 @@ import { Repository } from 'typeorm';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
 import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { Doctors } from './entities/doctor.entity';
+import { SpecialtiesService } from '../specialties/specialties.service';
 
 @Injectable()
 export class DoctorService {
   constructor(
     @InjectRepository(Doctors)
     private readonly doctorRepository: Repository<Doctors>,
-  ){}
+    private readonly specialtiesService: SpecialtiesService,
+  ) { }
+  
   createDoctor(createDoctorDto: CreateDoctorDto) {
     return this.doctorRepository.save(createDoctorDto);
   }
@@ -42,7 +45,13 @@ export class DoctorService {
     });
   }
 
-  async getDoctorSchedule(doctorId: string, date: string){
+  async getDoctorsBySpecialtyName(specialtyName: string): Promise<Doctors[]> {
+    const specialty = await this.specialtiesService.findByName(specialtyName);
+
+    return specialty.doctors;
+  }
+
+  async getDoctorSchedule(doctorId: string, dayOfWeek : Date){
     const doctor = await this.doctorRepository
       .createQueryBuilder('doctor')
       .innerJoinAndSelect('doctor.schedules', 'schedule')
@@ -53,7 +62,7 @@ export class DoctorService {
       throw new NotFoundException('Doctor not found');
     }
 
-    const dayOfWeek = new Date(date).getDay();
+
     const schedule = doctor.schedules.find(s => s.dayOfWeek === dayOfWeek)
 
     if (!schedule) {

@@ -24,10 +24,14 @@ export class SpecialtiesService {
   }
 
   async findAll() {
-    return await this.specialtyRepository.find({
-      relations: ['doctors', 'doctors.user']
-    });
+    return await this.specialtyRepository.find();
   }
+
+/*   async findAllName() {
+    return await this.specialtyRepository.find({
+      select: ['name', 'id'],
+    });
+  } */
 
   async findOne(id: string) {
     return await this.specialtyRepository.findOne({
@@ -37,10 +41,17 @@ export class SpecialtiesService {
   }
 
   async findByName(name: string) {
-    return await this.specialtyRepository.findOne({
+
+    const specialty = await this.specialtyRepository.findOne({
       where: { name },
-      relations: ['doctors']
+      relations: ['doctors.user'],
     });
+    
+    if (!specialty) {
+      throw new Error('Especialidad no encontrada');
+    }
+
+    return specialty;
   }
 
   async findAvailableDoctors(specialtyId: string) {

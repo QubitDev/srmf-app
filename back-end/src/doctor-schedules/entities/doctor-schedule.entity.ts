@@ -9,8 +9,8 @@ export class DoctorSchedule {
     @Column({ name: 'doctor_id' })
     doctorId: string;
     
-    @Column({ name: 'day_of_week' })
-    dayOfWeek: number;
+    @Column({ name: 'day_of_week', type: 'date' })
+    dayOfWeek: Date;
     
     @Column({ name: 'start_time', type: 'time' })
     startTime: string;

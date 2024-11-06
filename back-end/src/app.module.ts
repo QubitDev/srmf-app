@@ -12,6 +12,7 @@ import { Appointment } from './appointments/entities/appointment.entity';
 import { Specialty } from './specialties/entities/specialty.entity';
 import { Patients } from './patient/entities/patient.entity';
 import { Doctors } from './doctor/entities/doctor.entity';
+import { DoctorSchedule } from './doctor-schedules/entities/doctor-schedule.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -26,6 +27,7 @@ import { Doctors } from './doctor/entities/doctor.entity';
       Doctors,
       Patients, 
       Specialty,
+      DoctorSchedule,
       Appointment,
       DoctorModule
     ],
