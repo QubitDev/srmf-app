@@ -181,7 +181,7 @@ private loadDoctorsBySpecialtyName(specialty: Specialty): void {
   }
 
   getDoctorFullName(doctor: Doctor): string {
-    return `${doctor.user.firstName} ${doctor.user.lastName}`;
+    return `${doctor.user.name} ${doctor.user.lastName}`;
   }
 
   onSubmit(): void {
