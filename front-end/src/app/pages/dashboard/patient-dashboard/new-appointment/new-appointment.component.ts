@@ -137,8 +137,7 @@ export class NewAppointmentComponent implements OnInit {
   private loadAvailableTimeSlots(doctorId: string, date: string): void {
     this.isLoading = true;
     this.errorMessage = '';
-    const formattedDate = new Date(date).toISOString().split('T')[0];
-
+    const formattedDate = date
     console.log('Requesting time slots for:', { doctorId, date: formattedDate });
 
     this.appointmentService.getAvailableTimeSlots(doctorId, formattedDate).subscribe({
