@@ -84,7 +84,7 @@
     formControlName="appointmentTime"
     class="form-control"
     [class.is-invalid]="formControls['appointmentTime'].invalid && formControls['appointmentTime'].touched"
-    [disabled]="!availableTimeSlots?.length"
+    [disabled]="!availableTimeSlots.length"
   >
     <option value="">Selecciona una hora</option>
     <option *ngFor="let slot of availableTimeSlots" [value]="slot.startTime">

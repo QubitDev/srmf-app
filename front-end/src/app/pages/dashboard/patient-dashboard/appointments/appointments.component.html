@@ -1,5 +1,15 @@
-//src/app/pages/dashboard/patient-dashboard/appointmets/appointments.component.html
+<!-- src/app/pages/dashboard/patient-dashboard/appointments/appointments.component.html -->
 <div class="appointments-container">
+  <!-- Loading and Error States -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <span class="loader"></span>
+    Cargando citas...
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+
   <div class="calendar-section">
     <div class="calendar-header">
       <button class="month-nav" (click)="previousMonth()">←</button>
@@ -38,7 +48,13 @@
   <div class="appointments-details" *ngIf="selectedDate">
     <h3>Citas para {{ selectedDate | date:'fullDate' }}</h3>
     <div class="appointments-list">
-      <div class="appointment-card" *ngFor="let appointment of getAppointmentsForDate(selectedDate)">
+      <div class="appointment-card"
+           *ngFor="let appointment of getAppointmentsForDate(selectedDate)"
+           [class]="getStatusClass(appointment.status)">
+        <div class="appointment-header">
+          <span class="appointment-time">{{ appointment.time }}</span>
+          <span class="appointment-status">{{ appointment.status }}</span>
+        </div>
         <div class="appointment-info-grid">
           <div class="info-item">
             <label>Especialidad</label>
@@ -49,15 +65,11 @@
             <span>{{ appointment.doctorName }}</span>
           </div>
           <div class="info-item">
-            <label>Hora</label>
-            <span>{{ appointment.time }}</span>
-          </div>
-          <div class="info-item">
             <label>Consultorio</label>
             <span>{{ appointment.consultingRoom }}</span>
           </div>
-          <div class="info-item">
-            <label>Descripción</label>
+          <div class="info-item description">
+            <label>Motivo de la consulta</label>
             <span>{{ appointment.description }}</span>
           </div>
         </div>

@@ -48,3 +48,13 @@ export interface TimeSlot {
 export interface TimeSlotResponse {
   availableTimeSlots: TimeSlot[];
 }
+export interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  doctorName: string;
+  specialty: string;
+  consultingRoom: string;
+  description?: string;
+  status: string;
+}
