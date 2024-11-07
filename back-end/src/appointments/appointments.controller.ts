@@ -25,7 +25,14 @@ export class AppointmentsController {
   ) {
     return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
   }
+  
  */
+  
+  @Post()
+  @Auth(UserRole.PATIENT)
+  async getAvailableTimeSlots(doctorId: string, date: Date) {
+    return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
+  }
 
   @Post()
   @Auth(UserRole.PATIENT)
