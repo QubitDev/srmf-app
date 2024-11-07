@@ -22,7 +22,7 @@ export class DoctorController {
     return this.doctorService.findOne(id);
   }
 
-  @Get('doctors/specialty/:specialtyId')
+  @Get('specialty/:specialtyId')
   async getDoctorsBySpecialty(
     @Param('specialtyId') specialtyId: string
   ) {

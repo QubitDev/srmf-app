@@ -1,5 +1,5 @@
 
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn, ManyToOne, OneToMany, DeleteDateColumn } from 'typeorm';
 import { Doctors } from '../../doctor/entities/doctor.entity';
 
 
@@ -17,4 +17,6 @@ export class Specialty {
     @Column()
     description: string;
 
+    @DeleteDateColumn()
+    deletedAt: Date;
 }
