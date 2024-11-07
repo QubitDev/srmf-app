@@ -1,3 +1,4 @@
+/* src/app/pages/dashboard/patient-dashboard/new-appointment/new-appointment.component.css */
 .new-appointment-container {
   padding: 2rem;
   max-width: 800px;
@@ -41,18 +42,25 @@ label {
 .form-control:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.form-control.is-invalid {
+  border-color: #ef4444;
+}
+
+.form-control:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
 }
 
 select.form-control {
-  background-image: url("data:image/svg+xml,...");
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
 }
 
 textarea.form-control {
@@ -66,25 +74,87 @@ textarea.form-control {
   margin-top: 0.25rem;
 }
 
-.submit-button {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.submit-button, .reset-button {
+  padding: 0.75rem 1.5rem;
   border-radius: 0.375rem;
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.submit-button:hover:not(:disabled) {
-  background-color: var(--secondary-color);
+.submit-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  flex: 2;
 }
 
-.submit-button:disabled {
-  background-color: #9ca3af;
+.submit-button:hover:not(:disabled) {
+  background-color: var(--primary-color-dark);
+}
+
+.reset-button {
+  background-color: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  flex: 1;
+}
+
+.reset-button:hover:not(:disabled) {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.submit-button:disabled, .reset-button:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.375rem;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.loading-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 640px) {
@@ -94,5 +164,13 @@ textarea.form-control {
 
   .appointment-form {
     padding: 1.5rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .submit-button, .reset-button {
+    width: 100%;
   }
 }
