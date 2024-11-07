@@ -4,18 +4,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppointmentService } from '../../../../core/services/new-appointment.service';
-import { AppointmentRequest, AppointmentResponse } from '../../../../core/interfaces/appointment.interface';
-import {Doctor} from '../../../../core/interfaces/doctor.interface';
-import {Specialty} from '../../../../core/interfaces/specialty.interface';
-
-
-interface AppointmentFormControls {
-  specialtyId: FormControl<string | null>;
-  doctorId: FormControl<string | null>;
-  appointmentDate: FormControl<string | null>;
-  appointmentTime: FormControl<string | null>;
-  reason: FormControl<string | null>;
-}
+import { AppointmentRequest, AppointmentResponse, TimeSlot } from '../../../../core/interfaces/appointment.interface';
+import { Doctor } from '../../../../core/interfaces/doctor.interface';
+import { Specialty } from '../../../../core/interfaces/specialty.interface';
 
 interface AppointmentFormControls {
   specialtyId: FormControl<string | null>;
@@ -39,7 +30,7 @@ export class NewAppointmentComponent implements OnInit {
   appointmentForm!: FormGroup<AppointmentFormControls>;
   specialties: Specialty[] = [];
   doctors: Doctor[] = [];
-  availableTimeSlots: string[] = [];
+  availableTimeSlots: TimeSlot[] = [];
   isLoading: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
@@ -71,15 +62,10 @@ export class NewAppointmentComponent implements OnInit {
   private setupFormSubscriptions(): void {
     this.appointmentForm.get('specialtyId')?.valueChanges.subscribe(specialtyId => {
       if (specialtyId) {
-        // Opción 1: Usar ID
-       // this.loadDoctors(specialtyId);
-
-        // Opción 2: Usar nombre
-         const selectedSpecialty = this.specialties.find(s => s.id === specialtyId);
-         if (selectedSpecialty) {
-           this.loadDoctorsBySpecialtyName(selectedSpecialty);
+        const selectedSpecialty = this.specialties.find(s => s.id === specialtyId);
+        if (selectedSpecialty) {
+          this.loadDoctorsBySpecialtyName(selectedSpecialty);
         }
-
         this.appointmentForm.patchValue({
           doctorId: '',
           appointmentTime: ''
@@ -88,6 +74,7 @@ export class NewAppointmentComponent implements OnInit {
         this.doctors = [];
       }
     });
+
     this.appointmentForm.get('doctorId')?.valueChanges.subscribe(() => {
       this.checkAndLoadTimeSlots();
     });
@@ -103,6 +90,7 @@ export class NewAppointmentComponent implements OnInit {
 
     this.appointmentService.getSpecialties().subscribe({
       next: (specialties) => {
+        console.log('Specialties loaded:', specialties);
         this.specialties = specialties;
         this.isLoading = false;
       },
@@ -114,41 +102,25 @@ export class NewAppointmentComponent implements OnInit {
     });
   }
 
- // Opción 1: Cargar doctores por ID de especialidad
- private loadDoctors(specialtyId: string): void {
-  this.isLoading = true;
-  this.errorMessage = '';
+  private loadDoctorsBySpecialtyName(specialty: Specialty): void {
+    this.isLoading = true;
+    this.errorMessage = '';
 
-  this.appointmentService.getDoctorsBySpecialty(specialtyId).subscribe({
-    next: (doctors) => {
-      this.doctors = doctors;
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error al cargar doctores:', error);
-      this.errorMessage = 'No se pudieron cargar los doctores';
-      this.isLoading = false;
-    }
-  });
-}
+    console.log('Loading doctors for specialty:', specialty.name);
 
-// Opción 2: Cargar doctores por nombre de especialidad
-private loadDoctorsBySpecialtyName(specialty: Specialty): void {
-  this.isLoading = true;
-  this.errorMessage = '';
-
-  this.appointmentService.getDoctorsBySpecialtyName(specialty.name).subscribe({
-    next: (doctors) => {
-      this.doctors = doctors;
-      this.isLoading = false;
-    },
-    error: (error) => {
-      console.error('Error al cargar doctores:', error);
-      this.errorMessage = 'No se pudieron cargar los doctores';
-      this.isLoading = false;
-    }
-  });
-}
+    this.appointmentService.getDoctorsBySpecialtyName(specialty.name).subscribe({
+      next: (doctors) => {
+        console.log('Doctors loaded:', doctors);
+        this.doctors = doctors;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error al cargar doctores:', error);
+        this.errorMessage = 'No se pudieron cargar los doctores';
+        this.isLoading = false;
+      }
+    });
+  }
 
   private checkAndLoadTimeSlots(): void {
     const doctorId = this.appointmentForm.get('doctorId')?.value;
@@ -167,17 +139,25 @@ private loadDoctorsBySpecialtyName(specialty: Specialty): void {
     this.errorMessage = '';
     const formattedDate = new Date(date).toISOString().split('T')[0];
 
+    console.log('Requesting time slots for:', { doctorId, date: formattedDate });
+
     this.appointmentService.getAvailableTimeSlots(doctorId, formattedDate).subscribe({
-      next: (response) => {
-        this.availableTimeSlots = response.availableTimeSlots;
+      next: (slots) => {
+        console.log('Available time slots:', slots);
+        this.availableTimeSlots = slots || [];
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error al cargar horarios disponibles:', error);
         this.errorMessage = 'No se pudieron cargar los horarios disponibles';
+        this.availableTimeSlots = [];
         this.isLoading = false;
       }
     });
+  }
+
+  formatTimeSlot(slot: TimeSlot): string {
+    return `${slot.startTime} - ${slot.endTime}`;
   }
 
   getDoctorFullName(doctor: Doctor): string {
@@ -199,8 +179,11 @@ private loadDoctorsBySpecialtyName(specialty: Specialty): void {
         reason: formValue.reason ?? ''
       };
 
+      console.log('Submitting appointment request:', appointmentRequest);
+
       this.appointmentService.createAppointment(appointmentRequest).subscribe({
         next: (response: AppointmentResponse) => {
+          console.log('Appointment created successfully:', response);
           this.successMessage = 'La cita se ha agendado correctamente';
           this.isLoading = false;
           setTimeout(() => {

@@ -40,7 +40,11 @@ export interface AppointmentResponse {
   reason?: string;
   status: AppointmentStatus;
 }
+export interface TimeSlot {
+  startTime: string;
+  endTime: string;
+}
 
 export interface TimeSlotResponse {
-  availableTimeSlots: string[];
+  availableTimeSlots: TimeSlot[];
 }

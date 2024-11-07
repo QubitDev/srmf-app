@@ -59,43 +59,43 @@
     </div>
 
     <!-- Fecha -->
-    <div class="form-group">
-      <label for="appointmentDate">Fecha</label>
-      <input
-        type="date"
-        id="appointmentDate"
-        formControlName="appointmentDate"
-        class="form-control"
-        [min]="minDate"
-        [class.is-invalid]="formControls['appointmentDate'].invalid && formControls['appointmentDate'].touched"
-        [disabled]="!formControls['doctorId'].value"
-      >
-      <div class="error-message"
-           *ngIf="formControls['appointmentDate'].invalid && formControls['appointmentDate'].touched">
-        Por favor selecciona una fecha válida
-      </div>
-    </div>
+<div class="form-group">
+  <label for="appointmentDate">Fecha</label>
+  <input
+    type="date"
+    id="appointmentDate"
+    formControlName="appointmentDate"
+    class="form-control"
+    [min]="minDate"
+    [class.is-invalid]="formControls['appointmentDate'].invalid && formControls['appointmentDate'].touched"
+    [disabled]="!formControls['doctorId'].value"
+  >
+  <div class="error-message"
+       *ngIf="formControls['appointmentDate'].invalid && formControls['appointmentDate'].touched">
+    Por favor selecciona una fecha válida
+  </div>
+</div>
 
-    <!-- Hora -->
-    <div class="form-group">
-      <label for="appointmentTime">Hora</label>
-      <select
-        id="appointmentTime"
-        formControlName="appointmentTime"
-        class="form-control"
-        [class.is-invalid]="formControls['appointmentTime'].invalid && formControls['appointmentTime'].touched"
-        [disabled]="!availableTimeSlots.length"
-      >
-        <option value="">Selecciona una hora</option>
-        <option *ngFor="let time of availableTimeSlots" [value]="time">
-          {{time}}
-        </option>
-      </select>
-      <div class="error-message"
-           *ngIf="formControls['appointmentTime'].invalid && formControls['appointmentTime'].touched">
-        Por favor selecciona una hora disponible
-      </div>
-    </div>
+<!-- Hora -->
+<div class="form-group">
+  <label for="appointmentTime">Hora</label>
+  <select
+    id="appointmentTime"
+    formControlName="appointmentTime"
+    class="form-control"
+    [class.is-invalid]="formControls['appointmentTime'].invalid && formControls['appointmentTime'].touched"
+    [disabled]="!availableTimeSlots?.length"
+  >
+    <option value="">Selecciona una hora</option>
+    <option *ngFor="let slot of availableTimeSlots" [value]="slot.startTime">
+      {{slot.startTime}} - {{slot.endTime}}
+    </option>
+  </select>
+  <div class="error-message"
+       *ngIf="formControls['appointmentTime'].invalid && formControls['appointmentTime'].touched">
+    Por favor selecciona una hora disponible
+  </div>
+</div>
 
     <!-- Motivo de la consulta -->
     <div class="form-group">

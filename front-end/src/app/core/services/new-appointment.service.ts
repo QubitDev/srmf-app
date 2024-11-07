@@ -1,11 +1,12 @@
 // src/app/core/services/appointment.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import {
   AppointmentRequest,
   AppointmentResponse,
+  TimeSlot,
   TimeSlotResponse,
 
 } from '../interfaces/appointment.interface';
@@ -36,8 +37,9 @@ export class AppointmentService {
     return this.http.get<Doctor[]>(`${this.baseUrl}/doctor/specialty-name/${specialtyName}`);
   }
 
-  getAvailableTimeSlots(doctorId: string, date: string): Observable<{availableTimeSlots: string[]}> {
-    return this.http.get<{availableTimeSlots: string[]}>(`${this.baseUrl}/appointments/available-slots`, {
+
+  getAvailableTimeSlots(doctorId: string, date: string): Observable<TimeSlot[]> {
+    return this.http.get<TimeSlot[]>(`${this.baseUrl}/appointments/available-slots`, {
       params: { doctorId, date }
     });
   }
