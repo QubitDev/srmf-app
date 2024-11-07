@@ -24,9 +24,9 @@ export class AppointmentsController {
     @Query('date') date: string
   ) {
     try { const appointmentDate = new Date(date);
-       if (isNaN(appointmentDate.getTime())) { throw new Error('Invalid date format'); 
-
-       } 
+      if (isNaN(appointmentDate.getTime())) {
+        throw new Error('Invalid date format'); 
+      } 
        console.log(`Received doctorId: ${doctorId}, date: ${appointmentDate}`); 
        const slots = await this.appointmentsService.getAvailableTimeSlots(doctorId, appointmentDate); 
        console.log(`Available slots: ${JSON.stringify(slots)}`); 

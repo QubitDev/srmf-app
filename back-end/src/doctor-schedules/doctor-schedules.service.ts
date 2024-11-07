@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { forwardRef } from '@nestjs/common';
 
 import { CreateDoctorScheduleDto } from './dto/create-doctor-schedule.dto';
@@ -56,10 +56,12 @@ export class DoctorSchedulesService {
   }
 
   private async generateDoctorDaySchedule(doctor: Doctors, currentDate: Date) {
+    const localDate = new Date(currentDate);
+    localDate.setHours(0, 0, 0, 0);
     const existingSchedules = await this.scheduleRepository.find({
       where: {
         doctorId: doctor.id,
-        dayOfWeek: currentDate,
+        dayOfWeek: localDate,
       },
     });
   
@@ -149,10 +151,12 @@ private convertDateToTimeString(date: Date): string {
 
 
   async checkAvailability(doctorId: string, appointmentDate: Date, appointmentTime: string) {
+    const startDate = new Date(appointmentDate); startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(appointmentDate); endDate.setHours(23, 59, 59, 999);
     const schedule = await this.scheduleRepository.findOne({
       where: {
         doctorId,
-        dayOfWeek: appointmentDate, 
+        dayOfWeek: Between(startDate, endDate), 
         isAvailable: true,
       },
     });
@@ -178,15 +182,16 @@ private convertDateToTimeString(date: Date): string {
 
 
   async findSchedulesByDoctorAndDate(doctorId: string, date: Date): Promise<DoctorSchedule[]> {
+    const startDate = new Date(date); startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(date); endDate.setHours(23, 59, 59, 999);
 
     console.log('Doctor ID:', doctorId);
-    const formattedDate = date.toISOString().split('T')[0]; 
-    console.log('Formatted Date:', formattedDate);
+    console.log('Formatted Date:', date);
 
     const repo = await this.scheduleRepository.find({
       where: {
         doctorId,
-        dayOfWeek: date,
+        dayOfWeek: Between(startDate, endDate),
         isAvailable: true
       },
     });

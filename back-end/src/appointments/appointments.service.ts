@@ -29,11 +29,12 @@ export class AppointmentsService {
   ): Promise<{ startTime: string, endTime: string }[]> {
     
     console.log(date)
-    const formattedDate = date.toISOString().split('T')[0];
-
+    const localDate = new Date(date); 
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    localDate.setDate(localDate.getDate() + 1);
     const availableSchedules = await this.doctorScheduleService.findSchedulesByDoctorAndDate(
       doctorId, 
-      date
+      localDate
     );
     
 
@@ -62,31 +63,22 @@ export class AppointmentsService {
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
-  
-    const availableSlots = await this.getAvailableTimeSlots(
+
+    const checkAvailability = await this.doctorScheduleService.checkAvailability(
       createAppointmentDto.doctorId,
       createAppointmentDto.appointmentDate,
+      createAppointmentDto.appointmentTime
     );
 
-
-    console.log(availableSlots)
-
-  
-
-    const isTimeSlotAvailable = availableSlots.some(slot => {
-      const [startHour, startMinute] = slot.startTime.split(':').map(Number);
-      const [endHour, endMinute] = slot.endTime.split(':').map(Number);
-      const [appointmentHour, appointmentMinute] = createAppointmentDto.appointmentTime.split(':').map(Number);
-  
-      const isAfterStart = appointmentHour > startHour || (appointmentHour === startHour && appointmentMinute >= startMinute);
-      const isBeforeEnd = appointmentHour < endHour || (appointmentHour === endHour && appointmentMinute <= endMinute);
-  
-      return isAfterStart && isBeforeEnd;
-    });
-  
-    if (!isTimeSlotAvailable) {
-      throw new ConflictException('Selected time slot is not available');
+    if (checkAvailability) {
+      throw new ConflictException('Slot is not available');
     }
+
+
+    const localDate = new Date(createAppointmentDto.appointmentDate); 
+    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    localDate.setDate(localDate.getDate() + 1);
+    createAppointmentDto.appointmentDate = localDate;
   
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
@@ -206,25 +198,6 @@ export class AppointmentsService {
     return await this.appointmentRepository.softRemove(appointment);
   }
 
-  async checkAvailability(doctorId: string, date: Date, time: string): Promise<boolean> {
-    const existingSchedule = await this.doctorScheduleService.findOne(doctorId, date, time);
-  
-    if (!existingSchedule) {
-      return false;
-    }
-  
-    return this.isTimeWithinSchedule(time, existingSchedule.startTime, existingSchedule.endTime);
-  }
-
-  private isTimeWithinSchedule(time: string, startTime: string, endTime: string): boolean {
-    const [hours, minutes] = time.split(':').map(Number);
-    const [startHours, startMinutes] = startTime.split(':').map(Number);
-    const [endHours, endMinutes] = endTime.split(':').map(Number);
-  
-    const timeMinutes = hours * 60 + minutes;
-    const startMinutesTotal = startHours * 60 + startMinutes;
-    const endMinutesTotal = endHours * 60 + endMinutes;
-  
-    return timeMinutes >= startMinutesTotal && timeMinutes <= endMinutesTotal;
-  }
 }
+
+
