@@ -9,6 +9,7 @@
     "@nestjs/typeorm": "^10.0.2",
     "@types/pg": "^8.11.10",
     "pg": "^8.13.0",
+    "srfm-app": "file:",
     "typeorm": "^0.3.20"
   }
 }

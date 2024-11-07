@@ -1,103 +1,103 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+// src/app/core/services/auth.service.ts
 
-// Interfaces
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: 'patient' | 'doctor' | 'admin';
-}
-
-export interface AuthResponse {
-  user: User;
-  token: string;
-}
-
-export interface ResetPasswordResponse {
-  message: string;
-  success: boolean;
-}
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable, tap, catchError, throwError } from 'rxjs';
+import {
+  User,
+  LoginResponse,
+  LoginRequest,
+  RegisterRequest,
+  RegisterResponse,
+  UserRole
+} from '../interfaces/auth.interface';
+import { isPlatformBrowser } from '@angular/common';
+import { PLATFORM_ID, inject as injectPlatform } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'tu-api-url'; // Reemplazar con tu URL real
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser = this.currentUserSubject.asObservable();
+  private readonly API_URL = 'http://localhost:3000';
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private platformId = injectPlatform(PLATFORM_ID);
 
-  constructor(private http: HttpClient) {
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-      this.currentUserSubject.next(JSON.parse(savedUser));
-    }
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    console.log('Enviando request de login:', credentials);
+    return this.http.post<LoginResponse>(`${this.API_URL}/auth/login`, credentials)
+      .pipe(
+        tap(response => {
+          console.log('Respuesta del servidor:', response);
+
+          if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem('token', response.token);
+            localStorage.setItem('user', JSON.stringify(response.user));
+          }
+
+          this.currentUserSubject.next(response.user);
+        }),
+        catchError(error => {
+          console.error('Error detallado:', error);
+          return throwError(() => new Error(error.error?.message || 'Error durante el inicio de sesión'));
+        })
+      );
   }
 
-  signup(userData: Omit<User, 'id' | 'role'> & { password: string }): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/signup`, userData).pipe(
-      catchError(this.handleError)
-    );
-  }
-
-  login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, { email, password }).pipe(
-      map(response => {
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-        this.currentUserSubject.next(response.user);
-        return response;
-      }),
-      catchError(this.handleError)
-    );
-  }
-
-  requestPasswordReset(email: string): Observable<ResetPasswordResponse> {
-    return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/auth/forgot-password`, { email }).pipe(
-      catchError(this.handleError)
-    );
+  register(userData: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.API_URL}/auth/register`, userData)
+      .pipe(
+        tap(response => {
+          console.log('Registro exitoso:', response.message);
+        }),
+        catchError(error => {
+          console.error('Error durante el registro:', error);
+          return throwError(() => new Error(
+            error.error?.message ||
+            'Error durante el registro'
+          ));
+        })
+      );
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(null);
-  }
-
-  private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'Ocurrió un error en el servidor';
-
-    if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      // Error del backend
-      switch (error.status) {
-        case 400:
-          errorMessage = 'Datos inválidos';
-          break;
-        case 401:
-          errorMessage = 'No autorizado';
-          break;
-        case 404:
-          errorMessage = 'Recurso no encontrado';
-          break;
-        default:
-          errorMessage = 'Error en el servidor';
-      }
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
     }
-
-    return throwError(() => new Error(errorMessage));
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
-  isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value;
+  getToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem('token');
+    }
+    return null;
   }
 
-  getCurrentUserRole(): string | null {
-    return this.currentUserSubject.value?.role || null;
+  isLoggedIn(): boolean {
+    return !!this.getToken();
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
+  }
+
+  private getUserFromStorage(): User | null {
+    if (isPlatformBrowser(this.platformId)) {
+      const user = localStorage.getItem('user');
+      return user ? JSON.parse(user) : null;
+    }
+    return null;
+  }
+
+  getCurrentUserRole(): UserRole | null {
+    const user = this.getCurrentUser();
+    return user?.role || null;
   }
 }

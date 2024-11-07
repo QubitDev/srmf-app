@@ -9,6 +9,7 @@ import { UsersService } from '../users/users.service';
 import { UserRole } from '../common/enums/user-role.enum';
 
 
+
 @Injectable()
 export class AuthService {
     
@@ -32,7 +33,7 @@ export class AuthService {
                 lastName,
                 phone,
                 document,
-                role: UserRole.ADMIN,
+                role: UserRole.PATIENT,
                 email,
                 password: await bcryptjs.hash(password, 10),
                 createdAt:new Date(),
