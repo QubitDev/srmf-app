@@ -1,12 +1,12 @@
 // src/app/pages/dashboard/interfaces/dashboard-interfaces.ts
 export interface Appointment {
   id: string;
-  date: String;
+  date: string;
   time: string;
   doctorName: string;
   specialty: string;
   consultingRoom: string;
-  description: string;  // Agregamos este campo
+  description: string;
   status: 'pending' | 'completed' | 'cancelled';
 }
 export interface User {

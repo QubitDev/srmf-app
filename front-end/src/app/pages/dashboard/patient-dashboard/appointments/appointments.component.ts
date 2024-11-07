@@ -101,18 +101,26 @@ export class AppointmentsComponent implements OnInit {
   selectDate(date: Date) {
     console.log('Selecting date:', date);
     this.selectedDate = new Date(date);
-    console.log('Selected date:', this.selectedDate); // Asegúrate de que el valor se actualiza.
+    console.log('Selected date:', this.selectedDate);
   }
-
 
   getAppointmentsForDate(date: Date): Appointment[] {
     console.log('Getting appointments for date:', date);
-    const filteredAppointments = this.appointments.filter(appointment =>
-      this.isSameDay(new Date(appointment.date), date)
-    );
-    console.log('Filtered appointments:', filteredAppointments);  // Verifica los resultados filtrados.
+    const filteredAppointments = this.appointments.filter(appointment => {
+      const [year, month, day] = appointment.date.split('-');
+      const appointmentDate = new Date(Number(year), Number(month) - 1, Number(day));
+      return this.isSameDate(appointmentDate, date);
+    });
+    console.log('Filtered appointments:', filteredAppointments);
     return filteredAppointments;
   }
+
+  private isSameDate(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+
 
 
   hasAppointments(date: Date): boolean {
@@ -120,7 +128,6 @@ export class AppointmentsComponent implements OnInit {
     console.log('Has appointments on', date, ':', hasAppointments);
     return hasAppointments;
   }
-
 
   isToday(date: Date): boolean {
     return this.isSameDay(date, new Date());
