@@ -10,40 +10,57 @@ import { Appointment } from '../../interfaces/dashboard-interfaces';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './appointments.component.html',
-  styleUrl: './appointments.component.css'
+  styleUrls: ['./appointments.component.css']
 })
 export class AppointmentsComponent implements OnInit {
   currentMonth: Date = new Date();
   weeks: Date[][] = [];
   selectedDate: Date | null = null;
   appointments: Appointment[] = [];
+  isLoading: boolean = false;
+  error: string | null = null;
 
   constructor(private appointmentsService: AppointmentsService) {}
 
   ngOnInit() {
-    console.log('Component initialized');
     this.generateCalendar();
-    this.getAppointments();
+    this.loadAppointments();
   }
 
-  getAppointments() {
-    console.log('Getting appointments');
-    this.appointmentsService.getAppointments().subscribe(
-      (appointments: Appointment[]) => {
-        console.log('Appointments fetched:', appointments);
-        this.appointments = appointments;
+  loadAppointments() {
+    this.isLoading = true;
+    this.error = null;
+
+    this.appointmentsService.getAppointments().subscribe({
+      next: (appointments) => {
+        console.log('Appointments loaded:', appointments);
+        this.appointments = this.transformAppointments(appointments);
+        this.isLoading = false;
       },
-      (error) => {
-        console.error('Error fetching appointments:', error);
+      error: (error) => {
+        console.error('Error loading appointments:', error);
+        this.error = 'Error al cargar las citas';
+        this.isLoading = false;
       }
-    );
+    });
+  }
+
+  private transformAppointments(appointments: any[]): Appointment[] {
+    return appointments.map(apt => ({
+      id: apt.id,
+      date: apt.appointmentDate,
+      time: apt.appointmentTime,
+      doctorName: `Dr. ${apt.doctor.user.name} ${apt.doctor.user.lastName}`,
+      specialty: apt.doctor.specialty.name,
+      consultingRoom: apt.doctor.consultingRoom,
+      description: apt.reason || 'Sin descripción',
+      status: apt.status
+    }));
   }
 
   generateCalendar() {
-    console.log('Generating calendar');
     const year = this.currentMonth.getFullYear();
     const month = this.currentMonth.getMonth();
-
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
 
@@ -52,7 +69,6 @@ export class AppointmentsComponent implements OnInit {
 
     this.weeks = [];
     let currentWeek = [];
-
     const endDay = new Date(lastDay);
     endDay.setDate(endDay.getDate() + (6 - endDay.getDay()));
 
@@ -75,11 +91,9 @@ export class AppointmentsComponent implements OnInit {
       }
       this.weeks.push(currentWeek);
     }
-    console.log('Calendar generated:', this.weeks);
   }
 
   previousMonth() {
-    console.log('Navigating to previous month');
     this.currentMonth = new Date(
       this.currentMonth.getFullYear(),
       this.currentMonth.getMonth() - 1,
@@ -89,7 +103,6 @@ export class AppointmentsComponent implements OnInit {
   }
 
   nextMonth() {
-    console.log('Navigating to next month');
     this.currentMonth = new Date(
       this.currentMonth.getFullYear(),
       this.currentMonth.getMonth() + 1,
@@ -99,34 +112,21 @@ export class AppointmentsComponent implements OnInit {
   }
 
   selectDate(date: Date) {
-    console.log('Selecting date:', date);
     this.selectedDate = new Date(date);
     console.log('Selected date:', this.selectedDate);
   }
 
   getAppointmentsForDate(date: Date): Appointment[] {
-    console.log('Getting appointments for date:', date);
-    const filteredAppointments = this.appointments.filter(appointment => {
-      const [year, month, day] = appointment.date.split('-');
-      const appointmentDate = new Date(Number(year), Number(month) - 1, Number(day));
+    if (!date || !this.appointments) return [];
+
+    return this.appointments.filter(appointment => {
+      const appointmentDate = new Date(appointment.date);
       return this.isSameDate(appointmentDate, date);
     });
-    console.log('Filtered appointments:', filteredAppointments);
-    return filteredAppointments;
   }
-
-  private isSameDate(date1: Date, date2: Date): boolean {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
-  }
-
-
 
   hasAppointments(date: Date): boolean {
-    const hasAppointments = this.getAppointmentsForDate(date).length > 0;
-    console.log('Has appointments on', date, ':', hasAppointments);
-    return hasAppointments;
+    return this.getAppointmentsForDate(date).length > 0;
   }
 
   isToday(date: Date): boolean {
@@ -137,9 +137,25 @@ export class AppointmentsComponent implements OnInit {
     return date.getMonth() === this.currentMonth.getMonth();
   }
 
+  private isSameDate(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
+  }
+
   private isSameDay(date1: Date, date2: Date): boolean {
     return date1.getDate() === date2.getDate() &&
            date1.getMonth() === date2.getMonth() &&
            date1.getFullYear() === date2.getFullYear();
+  }
+
+  getStatusClass(status: string): string {
+    const statusClasses: { [key: string]: string } = {
+      'PENDING': 'status-pending',
+      'CONFIRMED': 'status-confirmed',
+      'COMPLETED': 'status-completed',
+      'CANCELLED': 'status-cancelled'
+    };
+    return statusClasses[status] || '';
   }
 }
