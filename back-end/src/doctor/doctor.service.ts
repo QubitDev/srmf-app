@@ -51,7 +51,7 @@ export class DoctorService {
     return specialty.doctors;
   }
 
-  async getDoctorSchedule(doctorId: string, dayOfWeek : Date){
+  async getDoctorSchedule(doctorId: string, dayOfWeek : Date, time:string){
     const doctor = await this.doctorRepository
       .createQueryBuilder('doctor')
       .innerJoinAndSelect('doctor.schedules', 'schedule')
@@ -59,11 +59,17 @@ export class DoctorService {
       .getOne()
     
     if (!doctor) {
-      throw new NotFoundException('Doctor not found');
+      throw new NotFoundException('Doctor not found .........25');
     }
 
-
-    const schedule = doctor.schedules.find(s => s.dayOfWeek === dayOfWeek)
+    // Convert `dayOfWeek` to 'YYYY-MM-DD' string
+    const dayOfWeekStr = dayOfWeek.toISOString().split('T')[0];
+  
+    // Find the schedule with the matching date
+    const schedule = doctor.schedules.find(s => 
+      s.dayOfWeek instanceof Date ? s.dayOfWeek.toISOString().split('T')[0] === dayOfWeekStr : s.dayOfWeek === dayOfWeekStr
+    );
+    console.log(schedule)
 
     if (!schedule) {
       throw new NotFoundException('No schedule available for this day');

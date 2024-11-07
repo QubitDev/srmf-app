@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UserRole } from '../common/enums';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { SpecialtiesService } from 'src/specialties/specialties.service';
@@ -18,18 +18,6 @@ export class AppointmentsController {
     private readonly doctorService: DoctorService,
   ) { }
 /* 
-  @Get('specialties')
-  async getAllSpecialties() {
-      return await this.specialtyService.findAll();
-  }
- */
-/*   @Get('doctors/specialty/:specialtyId')
-  async getDoctorsBySpecialty(
-    @Param('specialtyId') specialtyId: string
-  ) {
-    return await this.doctorService.getDoctorsBySpecialty(specialtyId);
-  }
- */
   @Get('available-slots')
   async getAvailableTimeSlots(
     @Query('doctorId') doctorId: string,
@@ -37,7 +25,7 @@ export class AppointmentsController {
   ) {
     return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
   }
-
+ */
 
   @Post()
   @Auth(UserRole.PATIENT)
@@ -60,12 +48,19 @@ export class AppointmentsController {
     return this.appointmentsService.findByPatient(patientId);
   }
 
+  @Get()
+  @Auth(UserRole.PATIENT)
+  findAll() {
+    return this.appointmentsService.findAll();
+  }
 
+/* 
   @Get('availability/:doctorId')
   checkAvailability(
     @Param('doctorId') doctorId: string,
-    @Query('date') date: string
+    @Query('date') date: string,
+    @Query('time') time: string
   ) {
-    return this.appointmentsService.checkAvailability(doctorId, new Date(date));
-  }
+    return this.appointmentsService.checkAvailability(doctorId, new Date(date), time);
+  } */
 }

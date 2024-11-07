@@ -10,6 +10,7 @@ import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.ser
 import { DoctorService } from '../doctor/doctor.service';
 import { PatientService } from '../patient/patient.service';
 import { AppointmentStatus } from '../common/enums';
+import { scheduled } from 'rxjs';
 
 @Injectable()
 export class AppointmentsService {
@@ -25,49 +26,68 @@ export class AppointmentsService {
   async getAvailableTimeSlots(
     doctorId: string,
     date: Date
-  ): Promise<string[]> {
-    const appointmentDate = new Date(date);
+  ): Promise<{ startTime: string, endTime: string }[]> {
     
-    const formattedDate = appointmentDate.toISOString().split('T')[0];
+    console.log(date)
+    const formattedDate = date.toISOString().split('T')[0];
 
-    const allTimeSlots = await this.doctorService.getDoctorSchedule(
-      doctorId,
+    const availableSchedules = await this.doctorScheduleService.findSchedulesByDoctorAndDate(
+      doctorId, 
       date
     );
+    
 
-    const existingAppointments = await this.appointmentRepository
-      .createQueryBuilder('appointment')
-      .where('appointment.doctor_id = :doctorId', { doctorId })
-      .andWhere('DATE(appointment.appointmentDate) = :date', { 
-          date: formattedDate 
-      })
-      .andWhere('appointment.status != :status', { 
-          status: AppointmentStatus.CANCELLED 
-      })
-      .getMany();
+    console.log(availableSchedules)
 
-    const bookedSlots = existingAppointments.map(apt => apt.appointmentTime);
-    return allTimeSlots.filter(slot => !bookedSlots.includes(slot));
+
+
+    if (!availableSchedules.length) {
+      throw new NotFoundException('No available schedules for this day----1');
+    }
+
+    return availableSchedules
+      .filter(scheduled => scheduled.isAvailable === true)
+      .map(schedule => ({
+      startTime: schedule.startTime.slice(0, 5), 
+      endTime: schedule.endTime.slice(0, 5),     
+    }));
   }
 
   async createAppointment(
     createAppointmentDto: CreateAppointmentDto,
     userEmail: string
   ): Promise<Appointment> {
+
     const patient = await this.patientService.findByUserEmail(userEmail);
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
-
+  
     const availableSlots = await this.getAvailableTimeSlots(
       createAppointmentDto.doctorId,
-      createAppointmentDto.appointmentDate
+      createAppointmentDto.appointmentDate,
     );
 
-    if (!availableSlots.includes(createAppointmentDto.appointmentTime)) {
-        throw new ConflictException('Selected time slot is not available');
-    }
 
+    console.log(availableSlots)
+
+  
+
+    const isTimeSlotAvailable = availableSlots.some(slot => {
+      const [startHour, startMinute] = slot.startTime.split(':').map(Number);
+      const [endHour, endMinute] = slot.endTime.split(':').map(Number);
+      const [appointmentHour, appointmentMinute] = createAppointmentDto.appointmentTime.split(':').map(Number);
+  
+      const isAfterStart = appointmentHour > startHour || (appointmentHour === startHour && appointmentMinute >= startMinute);
+      const isBeforeEnd = appointmentHour < endHour || (appointmentHour === endHour && appointmentMinute <= endMinute);
+  
+      return isAfterStart && isBeforeEnd;
+    });
+  
+    if (!isTimeSlotAvailable) {
+      throw new ConflictException('Selected time slot is not available');
+    }
+  
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
       patient,
@@ -75,7 +95,16 @@ export class AppointmentsService {
       status: AppointmentStatus.PENDING
     });
 
-    return await this.appointmentRepository.save(appointment);
+    const appointmentSave = await this.appointmentRepository.save(appointment);
+
+    await this.doctorScheduleService.updateAvailability(
+      createAppointmentDto.doctorId,
+      createAppointmentDto.appointmentDate,
+      createAppointmentDto.appointmentTime,
+      false
+    );
+  
+    return appointmentSave ;
   }
 
   async findAll() {
@@ -107,7 +136,7 @@ export class AppointmentsService {
       relations: ['patient', 'patient.user'],
       order: {
         appointmentDate: 'DESC'
-      }
+      } 
     });
   }
 
@@ -122,6 +151,41 @@ export class AppointmentsService {
     }
 
     return appointment;
+  }
+
+
+  async findByDatePatient(date: Date) {
+    const appointments = await this.appointmentRepository.find({
+      where: { appointmentDate: date },
+      relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
+    });
+
+    return appointments.map(appointment => ({
+      id: appointment.id,
+      date: appointment.appointmentDate.toISOString().split('T')[0],
+      time: appointment.appointmentTime,
+      doctorName: `Dr. ${appointment.doctor.user.name} ${appointment.doctor.user.lastName}`,
+      specialty: appointment.doctor.specialty.name,
+      consultingRoom: appointment.doctor.consultingRoom || 'N/A',
+      status: appointment.status,
+    }));
+  }
+
+
+  async findByDateDoctor(date: Date) {
+    const appointments = await this.appointmentRepository.find({
+      where: { appointmentDate: date },
+      relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
+    });
+
+    return appointments.map(appointment => ({
+      id: appointment.id,
+      date: appointment.appointmentDate.toISOString().split('T')[0],
+      time: appointment.appointmentTime,
+      PatientName: `Dr. ${appointment.patient.user.name} ${appointment.patient.user.lastName}`,
+      consultingRoom: appointment.doctor.consultingRoom || 'N/A',
+      status: appointment.status,
+    }));
   }
 
   async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
@@ -142,24 +206,25 @@ export class AppointmentsService {
     return await this.appointmentRepository.softRemove(appointment);
   }
 
-  // Método para verificar disponibilidad
-  async checkAvailability(doctorId: string, date: Date): Promise<boolean> {
-    const existingAppointment = await this.appointmentRepository.findOne({
-      where: {
-        doctor: { id: doctorId },
-        appointmentDate: date,
-        status: Not(AppointmentStatus.CANCELLED)
-      }
-    });
-
-    if (existingAppointment) {
+  async checkAvailability(doctorId: string, date: Date, time: string): Promise<boolean> {
+    const existingSchedule = await this.doctorScheduleService.findOne(doctorId, date, time);
+  
+    if (!existingSchedule) {
       return false;
     }
+  
+    return this.isTimeWithinSchedule(time, existingSchedule.startTime, existingSchedule.endTime);
+  }
 
-    return await this.doctorScheduleService.checkAvailability(
-      doctorId,
-      date,
-      date.toTimeString().slice(0, 5)
-    );
+  private isTimeWithinSchedule(time: string, startTime: string, endTime: string): boolean {
+    const [hours, minutes] = time.split(':').map(Number);
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const [endHours, endMinutes] = endTime.split(':').map(Number);
+  
+    const timeMinutes = hours * 60 + minutes;
+    const startMinutesTotal = startHours * 60 + startMinutes;
+    const endMinutesTotal = endHours * 60 + endMinutes;
+  
+    return timeMinutes >= startMinutesTotal && timeMinutes <= endMinutesTotal;
   }
 }

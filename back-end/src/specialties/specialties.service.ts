@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSpecialtyDto } from './dto/create-specialty.dto';
 import { UpdateSpecialtyDto } from './dto/update-specialty.dto';
 import { Specialty } from './entities/specialty.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
+import { Console } from 'console';
 
 @Injectable()
 export class SpecialtiesService {
@@ -60,4 +61,37 @@ export class SpecialtiesService {
       relations: ['doctors', 'doctors.schedules', 'doctors.user']
     });
   }
+
+
+  async remove(id: string) {
+    const specialty = await this.findOne(id);
+
+    if (!specialty) {
+      throw new NotFoundException(`Specialty with ID ${id} not found`);
+    }
+  
+    await this.specialtyRepository.softDelete(id);
+  
+    return { message: `User with ID ${id} has been removed` };
+  }
+
+  /* async restore(id: string) {
+    const specialty = await this.findOne(id)
+
+    console.log(`specialty: ${specialty}`);
+  
+    if (!specialty) {
+      throw new NotFoundException(`Specialty with ID ${id} not found or not soft-deleted`);
+    }
+
+    if (!specialty.deletedAt) {
+      throw new NotFoundException(`Specialty with ID ${id} is already restored`);
+    }
+
+    specialty.deletedAt = null;
+    
+    await this.specialtyRepository.save(specialty);
+  
+    return { message: `Specialty with ID ${id} has been restored` };
+  } */
 }
