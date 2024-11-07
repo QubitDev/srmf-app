@@ -17,22 +17,32 @@ export class AppointmentsController {
     private readonly specialtyService: SpecialtiesService,
     private readonly doctorService: DoctorService,
   ) { }
-/* 
+ 
   @Get('available-slots')
   async getAvailableTimeSlots(
     @Query('doctorId') doctorId: string,
-    @Query('date') date: Date
+    @Query('date') date: string
   ) {
-    return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
+    try { const appointmentDate = new Date(date);
+       if (isNaN(appointmentDate.getTime())) { throw new Error('Invalid date format'); 
+
+       } 
+       console.log(`Received doctorId: ${doctorId}, date: ${appointmentDate}`); 
+       const slots = await this.appointmentsService.getAvailableTimeSlots(doctorId, appointmentDate); 
+       console.log(`Available slots: ${JSON.stringify(slots)}`); 
+       return slots; 
+      } catch (error) {
+         console.error('Error getting available slots:', error);
+          throw error;}
   }
   
- */
+ 
   
-  @Post()
+  /*@Post()
   @Auth(UserRole.PATIENT)
   async getAvailableTimeSlots(doctorId: string, date: Date) {
     return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
-  }
+  }*/
 
   @Post()
   @Auth(UserRole.PATIENT)
