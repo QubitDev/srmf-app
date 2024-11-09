@@ -1,3 +1,4 @@
+import { IsDate } from 'class-validator';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import * as bcryptjs from 'bcryptjs';
 import { Repository } from 'typeorm';
@@ -71,7 +72,7 @@ export class UsersService {
   findOneByEmailWithPassword(email:string) {
     return this.userRepository.findOne({
       where: {email},
-      select: ['id', 'name', 'email', 'role', 'password']
+      select: ['id', 'name', 'lastName', 'phone','email', 'role', 'password']
     });
   }
 
@@ -105,9 +106,16 @@ export class UsersService {
     return this.userRepository.findOneBy({id})
   }
 
+  findOneByIdWithPassword(id:string) {
+    return this.userRepository.findOne({
+      where: {id},
+      select: ['id', 'name', 'lastName', 'phone','email', 'role', 'password']
+    });
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto) {
   
-    const user = await this.findOneById(id);
+    const user = await this.findOneByIdWithPassword(id);
 
     if (!user) {
       throw new NotFoundException('User not found');

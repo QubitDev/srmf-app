@@ -77,6 +77,25 @@ export class DoctorService {
 
     return this.generateTimeSlots(schedule.startTime, schedule.endTime);
   }
+
+  async findByUserEmail(email: string): Promise<Doctors> {     
+    const doctor = await this.doctorRepository.findOne({       
+        relations: {         
+            user: true       
+        },       
+        where: {         
+            user: {           
+                email: email         
+            }       
+        }     
+    });
+
+    if (!doctor) {
+        throw new NotFoundException('Patient not found');
+    }
+
+    return doctor;
+  }
   
   private generateTimeSlots(startTime: string, endTime: string): string[] {
     const slots: string[] = [];

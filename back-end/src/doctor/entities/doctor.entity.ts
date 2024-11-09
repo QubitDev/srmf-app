@@ -30,6 +30,7 @@ export class Doctors {
     @ManyToOne(() => Specialty, (specialty) => specialty.id, {
         eager:true,
     })
+        
     @JoinColumn({ name: 'specialty_id', referencedColumnName:'id'  })
     specialty: Specialty;
 

@@ -17,7 +17,7 @@ export class AppointmentsController {
     private readonly specialtyService: SpecialtiesService,
     private readonly doctorService: DoctorService,
   ) { }
- 
+
   @Get('available-slots')
   async getAvailableTimeSlots(
     @Query('doctorId') doctorId: string,
@@ -27,57 +27,65 @@ export class AppointmentsController {
       if (isNaN(appointmentDate.getTime())) {
         throw new Error('Invalid date format'); 
       } 
-       console.log(`Received doctorId: ${doctorId}, date: ${appointmentDate}`); 
-       const slots = await this.appointmentsService.getAvailableTimeSlots(doctorId, appointmentDate); 
-       console.log(`Available slots: ${JSON.stringify(slots)}`); 
-       return slots; 
+
+      console.log(`Received doctorId: ${doctorId}, date: ${appointmentDate}`); 
+      const slots = await this.appointmentsService.getAvailableTimeSlots(doctorId, appointmentDate); 
+      console.log(`Available slots: ${JSON.stringify(slots)}`); 
+      return slots; 
       } catch (error) {
-         console.error('Error getting available slots:', error);
-          throw error;}
+        console.error('Error getting available slots:', error);
+      throw error;
+    }
   }
   
- 
-  
-  /*@Post()
-  @Auth(UserRole.PATIENT)
-  async getAvailableTimeSlots(doctorId: string, date: Date) {
-    return await this.appointmentsService.getAvailableTimeSlots(doctorId, date);
-  }*/
 
   @Post()
   @Auth(UserRole.PATIENT)
-  async createAppointment(@Body() createAppointmentDto: CreateAppointmentDto, @ActiveUser() activeUser: UserActiveInterface) {      
+  async createAppointment(@Body() createAppointmentDto: CreateAppointmentDto, @ActiveUser() user: UserActiveInterface) {      
     return await this.appointmentsService.createAppointment(
       createAppointmentDto,
-      activeUser.email
+      user
     );
   }
 
+
   @Get('doctor/:doctorId')
   @Auth(UserRole.DOCTOR)
-  findByDoctor(@Param('doctorId') doctorId: string) {
+  findByDoctor(@Param('doctorId') doctorId: string, @ActiveUser() user: UserActiveInterface) {
     return this.appointmentsService.findByDoctor(doctorId);
   }
 
   @Get('patient/:patientId')
   @Auth(UserRole.PATIENT)
-  findByPatient(@Param('patientId') patientId: string) {
-    return this.appointmentsService.findByPatient(patientId);
+  findByPatient(@Param('patientId') patientId: string, @ActiveUser() user: UserActiveInterface) {
+    return this.appointmentsService.findByPatient(user.email);
   }
+
+
+  @Get(':date')
+  @Auth(UserRole.PATIENT)
+  findByDatePatient(@Param('date') date: string, @ActiveUser() user: UserActiveInterface) {
+    return this.appointmentsService.findByDatePatient(new Date(date), user);
+  }
+
+  
+  @Get(':date')
+  @Auth(UserRole.PATIENT)
+  findByDateDoctor(@Param('date') date: string, @ActiveUser() user: UserActiveInterface) {
+    return this.appointmentsService.findByDateDoctor(new Date(date), user);
+  }
+
+
 
   @Get()
   @Auth(UserRole.PATIENT)
+  findAllUser(@ActiveUser() activeUser: UserActiveInterface) {
+    return this.appointmentsService.findAllUser(activeUser);
+  }
+
+  @Get()
+  @Auth(UserRole.ADMIN)
   findAll() {
     return this.appointmentsService.findAll();
   }
-
-/* 
-  @Get('availability/:doctorId')
-  checkAvailability(
-    @Param('doctorId') doctorId: string,
-    @Query('date') date: string,
-    @Query('time') time: string
-  ) {
-    return this.appointmentsService.checkAvailability(doctorId, new Date(date), time);
-  } */
 }

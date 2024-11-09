@@ -39,6 +39,8 @@ export class Appointment {
     @JoinColumn({ name: 'patient_id' })
     patient: Patients;
 
+    @Column()
+    patient_id: string;
     
     @ManyToOne(() => Doctors, doctor => doctor.appointments, {
         eager: true,
@@ -47,4 +49,7 @@ export class Appointment {
     })
     @JoinColumn({ name: 'doctor_id' })
     doctor: Doctors;
+
+    @Column()
+    doctor_id:string;
 }

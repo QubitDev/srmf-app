@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -9,8 +9,10 @@ import { Appointment } from './entities/appointment.entity';
 import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.service';
 import { DoctorService } from '../doctor/doctor.service';
 import { PatientService } from '../patient/patient.service';
-import { AppointmentStatus } from '../common/enums';
+import { AppointmentStatus, UserRole } from '../common/enums';
 import { scheduled } from 'rxjs';
+import { UserActiveInterface } from 'src/common/interface/user-active.interface';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Injectable()
 export class AppointmentsService {
@@ -56,10 +58,11 @@ export class AppointmentsService {
 
   async createAppointment(
     createAppointmentDto: CreateAppointmentDto,
-    userEmail: string
+    user: UserActiveInterface
   ): Promise<Appointment> {
 
-    const patient = await this.patientService.findByUserEmail(userEmail);
+    const patient = await this.patientService.findByUserEmail(user.email);
+    console.log(`PATIENT ==> ${patient.id}`)   
     if (!patient) {
       throw new NotFoundException('Patient not found');
     }
@@ -82,8 +85,8 @@ export class AppointmentsService {
   
     const appointment = this.appointmentRepository.create({
       ...createAppointmentDto,
-      patient,
-      doctor: { id: createAppointmentDto.doctorId },
+      patient_id: patient.id,
+      doctor_id: createAppointmentDto.doctorId ,
       status: AppointmentStatus.PENDING
     });
 
@@ -108,10 +111,28 @@ export class AppointmentsService {
     });
   }
 
-  async findByPatient(patientId: string) {
+  async findAllUser(user: UserActiveInterface) {
+    const patient = await this.patientService.findByUserEmail(user.email);
+
+    return await this.appointmentRepository.find({
+      where: { patient_id: patient.id },
+    });
+  }
+
+  async findByPatient(email: string) {
+    
+    const patient = await this.patientService.findByUserEmail(email);
+    
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+
+    
     return await this.appointmentRepository.find({
       where: {
-        patient: { id: patientId }
+        patient: { 
+          id: patient.id 
+        }
       },
       relations: ['doctor', 'doctor.user', 'doctor.specialty'],
       order: {
@@ -146,9 +167,19 @@ export class AppointmentsService {
   }
 
 
-  async findByDatePatient(date: Date) {
+  async findByDatePatient(
+    date: Date,
+    user: UserActiveInterface
+  ) {
+    const patient = await this.patientService.findByUserEmail(user.email);
+
+    
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+
     const appointments = await this.appointmentRepository.find({
-      where: { appointmentDate: date },
+      where: { appointmentDate: date, patient_id: patient.id },
       relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
     });
 
@@ -164,9 +195,16 @@ export class AppointmentsService {
   }
 
 
-  async findByDateDoctor(date: Date) {
+  async findByDateDoctor(date: Date, user: UserActiveInterface ) {
+    const doctor = await this.doctorService.findByUserEmail(user.email);
+
+        
+    if (!doctor) {
+      throw new NotFoundException('Doctor not found');
+    }
+
     const appointments = await this.appointmentRepository.find({
-      where: { appointmentDate: date },
+      where: { appointmentDate: date, doctor_id:doctor.id },
       relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
     });
 
