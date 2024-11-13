@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 
@@ -10,9 +10,7 @@ import { DoctorSchedulesService } from '../doctor-schedules/doctor-schedules.ser
 import { DoctorService } from '../doctor/doctor.service';
 import { PatientService } from '../patient/patient.service';
 import { AppointmentStatus, UserRole } from '../common/enums';
-import { scheduled } from 'rxjs';
 import { UserActiveInterface } from 'src/common/interface/user-active.interface';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Injectable()
 export class AppointmentsService {
@@ -212,7 +210,7 @@ export class AppointmentsService {
     const appointment = await this.findOne(id);
 
     if (appointment.doctor_id !== doctor.id) {
-      throw new NotFoundException('Appointment not found');
+      throw new UnauthorizedException()
     }
 
     if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
@@ -253,6 +251,8 @@ export class AppointmentsService {
 
     return userA
   }
+
+  //private validateOwnerShip
 
 }
 
