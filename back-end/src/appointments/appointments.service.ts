@@ -61,11 +61,7 @@ export class AppointmentsService {
     user: UserActiveInterface
   ): Promise<Appointment> {
 
-    const patient = await this.patientService.findByUserEmail(user.email);
-    console.log(`PATIENT ==> ${patient.id}`)   
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
+    const patient = await this.searchUser(user);
 
     const checkAvailability = await this.doctorScheduleService.checkAvailability(
       createAppointmentDto.doctorId,
@@ -112,7 +108,7 @@ export class AppointmentsService {
   }
 
   async findAllUser(user: UserActiveInterface) {
-    const patient = await this.patientService.findByUserEmail(user.email);
+    const patient = await this.searchUser(user);
 
     return await this.appointmentRepository.find({
       where: { patient_id: patient.id },
@@ -121,7 +117,7 @@ export class AppointmentsService {
 
   async findByPatient(email: string) {
     
-    const patient = await this.patientService.findByUserEmail(email);
+    const patient = await this.searchUserPatient(email);
     
     if (!patient) {
       throw new NotFoundException('Patient not found');
@@ -171,12 +167,8 @@ export class AppointmentsService {
     date: Date,
     user: UserActiveInterface
   ) {
-    const patient = await this.patientService.findByUserEmail(user.email);
-
     
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
-    }
+    const patient = await this.searchUser(user);
 
     const appointments = await this.appointmentRepository.find({
       where: { appointmentDate: date, patient_id: patient.id },
@@ -196,12 +188,8 @@ export class AppointmentsService {
 
 
   async findByDateDoctor(date: Date, user: UserActiveInterface ) {
-    const doctor = await this.doctorService.findByUserEmail(user.email);
-
-        
-    if (!doctor) {
-      throw new NotFoundException('Doctor not found');
-    }
+    
+    const doctor = await this.searchUser(user);
 
     const appointments = await this.appointmentRepository.find({
       where: { appointmentDate: date, doctor_id:doctor.id },
@@ -218,7 +206,12 @@ export class AppointmentsService {
     }));
   }
 
-  async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
+  async updateAppointmetStatus(
+    id: string,
+    updateAppointmentDto: UpdateAppointmentDto,
+    user: UserActiveInterface
+  ){
+
     const appointment = await this.findOne(id);
 
     if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
@@ -231,9 +224,33 @@ export class AppointmentsService {
     });
   }
 
-  async remove(id: string) {
-    const appointment = await this.findOne(id);
-    return await this.appointmentRepository.softRemove(appointment);
+
+
+
+  //Funciones privadas
+  private async searchUserPatient(email:string){
+    const patient = await this.patientService.findByUserEmail(email);
+    
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+
+    return patient
+  }
+
+  private async searchUser(user: UserActiveInterface){
+    let userA;
+    if (user.role === UserRole.DOCTOR){
+      userA = await this.doctorService.findByUserEmail(user.email);
+    }else{
+      userA = await this.patientService.findByUserEmail(user.email);
+    }
+    
+    if (!userA) {
+      throw new NotFoundException('User not found');
+    }
+
+    return userA
   }
 
 }

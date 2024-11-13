@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { UserRole } from '../common/enums';
 import { Auth } from '../auth/decorators/auth.decorator';
 import { SpecialtiesService } from 'src/specialties/specialties.service';
 import { UserActiveInterface } from 'src/common/interface/user-active.interface';
 import { ActiveUser } from 'src/common/decorators/active-user.decorator';
 import { DoctorService } from 'src/doctor/doctor.service';
+
 
 @Controller('appointments')
 export class AppointmentsController {
@@ -87,5 +89,11 @@ export class AppointmentsController {
   @Auth(UserRole.ADMIN)
   findAll() {
     return this.appointmentsService.findAll();
+  }
+
+  @Post(':id')
+  @Auth(UserRole.DOCTOR)
+  updateAppointmentsStatus(@Param('id') id: string, @Body() UpdateAppointmentDto: UpdateAppointmentDto, @ActiveUser() user: UserActiveInterface){
+    return this.appointmentsService.updateAppointmetStatus(id, UpdateAppointmentDto, user);
   }
 }
