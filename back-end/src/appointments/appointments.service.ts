@@ -39,13 +39,8 @@ export class AppointmentsService {
       localDate
     );
     
-
-    console.log(availableSchedules)
-
-
-
     if (!availableSchedules.length) {
-      throw new NotFoundException('No available schedules for this day----1');
+      throw new NotFoundException('No available schedules for this day.');
     }
 
     return availableSchedules
