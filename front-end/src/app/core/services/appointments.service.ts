@@ -41,10 +41,13 @@ export class AppointmentsService {
   }
 
    // Para obtener citas por fecha específica
-   getAppointmentsByDate(date: string): Observable<Appointment[]> {
+  getAppointmentsByDate(date: string): Observable<Appointment[]> {
     return this.http.get<Appointment[]>(`${this.baseUrl}/appointments/${date}`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      tap(response => {
+        console.log('API Response:', response);
+      })
+    );
   }
-
 }

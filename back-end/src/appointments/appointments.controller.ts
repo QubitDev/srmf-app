@@ -85,7 +85,7 @@ export class AppointmentsController {
     return this.appointmentsService.findAllUser(activeUser);
   }
 
-  @Get()
+  @Get('Admin')
   @Auth(UserRole.ADMIN)
   findAll() {
     return this.appointmentsService.findAll();

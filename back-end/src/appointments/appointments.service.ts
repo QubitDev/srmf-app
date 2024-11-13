@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
+import { Between, Like, Not, Repository } from 'typeorm';
 
 
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -105,6 +105,7 @@ export class AppointmentsService {
 
     return await this.appointmentRepository.find({
       where: { patient_id: patient.id },
+      relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
     });
   }
 
@@ -160,17 +161,28 @@ export class AppointmentsService {
     date: Date,
     user: UserActiveInterface
   ) {
-    
+    console.log('date:::::::::>>>>>>>', date);
     const patient = await this.searchUser(user);
 
+     // Obtener el inicio y el fin del día para la fecha proporcionada
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+  
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+  
+    // Usar Between para buscar las citas dentro de este rango
     const appointments = await this.appointmentRepository.find({
-      where: { appointmentDate: date, patient_id: patient.id },
+      where: { 
+        appointmentDate: Between(startOfDay, endOfDay),
+        patient_id: patient.id 
+      },
       relations: ['doctor', 'doctor.user', 'doctor.specialty', 'patient', 'patient.user']
     });
 
     return appointments.map(appointment => ({
       id: appointment.id,
-      date: appointment.appointmentDate.toISOString().split('T')[0],
+      date: appointment.appointmentDate,
       time: appointment.appointmentTime,
       doctorName: `Dr. ${appointment.doctor.user.name} ${appointment.doctor.user.lastName}`,
       specialty: appointment.doctor.specialty.name,

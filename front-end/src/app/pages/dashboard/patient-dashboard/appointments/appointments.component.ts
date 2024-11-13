@@ -48,34 +48,36 @@ export class AppointmentsComponent implements OnInit {
   }
 
   private transformAppointments(appointments: any[]): Appointment[] {
-    return appointments.map(apt => {
-      try {
-        console.log(apt)
-        return {
-          id: apt?.id || '',
-          date: apt?.appointmentDate || '',
-          time: apt?.appointmentTime || '',
-          doctorName: apt?.doctorName || '',
-          specialty: apt?.doctor?.specialty?.name || 'No especificada',
-          consultingRoom: apt?.doctor?.consultingRoom || 'N/A',
-          description: apt?.reason || 'Sin descripción',
-          status: apt?.status || 'pending'
-        };
-      } catch (error) {
-        console.error('Error transforming appointment:', apt, error);
-        return {
-          id: '',
-          date: '',
-          time: '',
-          doctorName: 'Error en datos',
-          specialty: 'No disponible',
-          consultingRoom: 'N/A',
-          description: 'Error en datos',
-          status: 'pending'
-        };
-      }
-    });
-  }
+  return appointments.map(apt => {
+    try {
+      return {
+        id: apt.id || '',
+        date: apt.appointmentDate || '',
+        time: apt.appointmentTime || '',
+        doctorName: apt.doctor?.user 
+          ? `Dr. ${apt.doctor.user.name} ${apt.doctor.user.lastName}`
+          : 'No asignado',
+        specialty: apt.doctor?.specialty?.name || 'No especificada',
+        consultingRoom: apt.doctor?.consultingRoom || 'N/A',
+        description: apt.reason || 'Sin descripción',
+        status: apt.status || 'PENDING'
+      };
+    } catch (error) {
+      console.error('Error transforming appointment:', apt, error);
+      return {
+        id: '',
+        date: '',
+        time: '',
+        doctorName: 'Error en datos',
+        specialty: 'No disponible',
+        consultingRoom: 'N/A',
+        description: 'Error en datos',
+        status: 'PENDING'
+      };
+    }
+  });
+}
+
 
   selectDate(date: Date) {
     console.log('Date selected:', date);
