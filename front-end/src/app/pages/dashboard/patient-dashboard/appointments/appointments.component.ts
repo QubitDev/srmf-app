@@ -1,4 +1,3 @@
-// src/app/pages/dashboard/patient-dashboard/appointments/appointments.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -23,18 +22,21 @@ export class AppointmentsComponent implements OnInit {
   constructor(private appointmentsService: AppointmentsService) {}
 
   ngOnInit() {
+    console.log('Component initialized');
     this.generateCalendar();
     this.loadAppointments();
   }
 
   loadAppointments() {
+    console.log('Loading appointments...');
     this.isLoading = true;
     this.error = null;
 
     this.appointmentsService.getAppointments().subscribe({
-      next: (appointments) => {
-        console.log('Appointments loaded:', appointments);
-        this.appointments = this.transformAppointments(appointments);
+      next: (response: any) => {
+        console.log('Raw appointments response:', response);
+        this.appointments = this.transformAppointments(response);
+        console.log('Transformed appointments:', this.appointments);
         this.isLoading = false;
       },
       error: (error) => {
@@ -46,16 +48,67 @@ export class AppointmentsComponent implements OnInit {
   }
 
   private transformAppointments(appointments: any[]): Appointment[] {
-    return appointments.map(apt => ({
-      id: apt.id,
-      date: apt.appointmentDate,
-      time: apt.appointmentTime,
-      doctorName: `Dr. ${apt.doctor.user.name} ${apt.doctor.user.lastName}`,
-      specialty: apt.doctor.specialty.name,
-      consultingRoom: apt.doctor.consultingRoom,
-      description: apt.reason || 'Sin descripción',
-      status: apt.status
-    }));
+    return appointments.map(apt => {
+      try {
+        console.log(apt)
+        return {
+          id: apt?.id || '',
+          date: apt?.appointmentDate || '',
+          time: apt?.appointmentTime || '',
+          doctorName: apt?.doctorName || '',
+          specialty: apt?.doctor?.specialty?.name || 'No especificada',
+          consultingRoom: apt?.doctor?.consultingRoom || 'N/A',
+          description: apt?.reason || 'Sin descripción',
+          status: apt?.status || 'pending'
+        };
+      } catch (error) {
+        console.error('Error transforming appointment:', apt, error);
+        return {
+          id: '',
+          date: '',
+          time: '',
+          doctorName: 'Error en datos',
+          specialty: 'No disponible',
+          consultingRoom: 'N/A',
+          description: 'Error en datos',
+          status: 'pending'
+        };
+      }
+    });
+  }
+
+  selectDate(date: Date) {
+    console.log('Date selected:', date);
+    this.selectedDate = new Date(date);
+    console.log('Selected date set to:', this.selectedDate);
+  }
+
+  getAppointmentsForDate(date: Date): Appointment[] {
+    if (!date || !this.appointments) {
+      console.log('No date or appointments available');
+      return [];
+    }
+
+    // Normalizar la fecha seleccionada
+    const normalizedSelectedDate = new Date(date);
+    normalizedSelectedDate.setHours(0, 0, 0, 0);
+    console.log('Normalized selected date:', normalizedSelectedDate);
+
+    const appointmentsForDate = this.appointments.filter(appointment => {
+      const appointmentDate = new Date(appointment.date);
+      appointmentDate.setHours(0, 0, 0, 0);
+
+      return appointmentDate.getTime() === normalizedSelectedDate.getTime();
+    });
+
+    console.log('Found appointments for date:', appointmentsForDate);
+    return appointmentsForDate;
+  }
+
+  hasAppointments(date: Date): boolean {
+    const has = this.getAppointmentsForDate(date).length > 0;
+    console.log('Checking if date has appointments:', { date, has });
+    return has;
   }
 
   generateCalendar() {
@@ -111,36 +164,12 @@ export class AppointmentsComponent implements OnInit {
     this.generateCalendar();
   }
 
-  selectDate(date: Date) {
-    this.selectedDate = new Date(date);
-    console.log('Selected date:', this.selectedDate);
-  }
-
-  getAppointmentsForDate(date: Date): Appointment[] {
-    if (!date || !this.appointments) return [];
-
-    return this.appointments.filter(appointment => {
-      const appointmentDate = new Date(appointment.date);
-      return this.isSameDate(appointmentDate, date);
-    });
-  }
-
-  hasAppointments(date: Date): boolean {
-    return this.getAppointmentsForDate(date).length > 0;
-  }
-
   isToday(date: Date): boolean {
     return this.isSameDay(date, new Date());
   }
 
   isSelectedMonth(date: Date): boolean {
     return date.getMonth() === this.currentMonth.getMonth();
-  }
-
-  private isSameDate(date1: Date, date2: Date): boolean {
-    return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
   }
 
   private isSameDay(date1: Date, date2: Date): boolean {

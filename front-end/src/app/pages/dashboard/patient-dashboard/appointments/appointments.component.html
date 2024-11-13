@@ -1,4 +1,3 @@
-<!-- src/app/pages/dashboard/patient-dashboard/appointments/appointments.component.html -->
 <div class="appointments-container">
   <!-- Loading and Error States -->
   <div *ngIf="isLoading" class="loading-indicator">
@@ -33,12 +32,10 @@
           <div class="day"
                *ngFor="let date of week"
                [class.today]="isToday(date)"
-               [class.has-appointments]="hasAppointments(date)"
                [class.selected]="selectedDate?.toDateString() === date.toDateString()"
                [class.other-month]="!isSelectedMonth(date)"
                (click)="selectDate(date)">
             <span class="date-number">{{ date | date:'d' }}</span>
-            <div class="appointment-indicator" *ngIf="hasAppointments(date)"></div>
           </div>
         </div>
       </div>

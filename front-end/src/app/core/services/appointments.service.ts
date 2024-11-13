@@ -1,7 +1,7 @@
 // src/app/core/services/appointments.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { Appointment } from '../../pages/dashboard/interfaces/dashboard-interfaces';
 
 @Injectable({
@@ -17,11 +17,15 @@ export class AppointmentsService {
     return new HttpHeaders().set('Authorization', `Bearer ${token}`);
   }
 
-  getAppointments(): Observable<Appointment[]> {
-    console.log('Fetching appointments from API');
-    return this.http.get<Appointment[]>(`${this.baseUrl}/appointments`, {
+  // Para cargar todas las citas
+  getAppointments(): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/appointments`, {
       headers: this.getAuthHeaders()
-    });
+    }).pipe(
+      tap(response => {
+        console.log('API Response:', response);
+      })
+    );
   }
 
   getPatientAppointments(patientId: string): Observable<Appointment[]> {
@@ -36,9 +40,11 @@ export class AppointmentsService {
     });
   }
 
-  getAppointmentsByDate(date: string): Observable<Appointment[]> {
-    return this.http.get<Appointment[]>(`${this.baseUrl}/appointments/date/${date}`, {
+   // Para obtener citas por fecha específica
+   getAppointmentsByDate(date: string): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.baseUrl}/appointments/${date}`, {
       headers: this.getAuthHeaders()
     });
   }
+
 }
