@@ -71,7 +71,7 @@ export class AppointmentsController {
   }
 
   
-  @Get(':date')
+  @Get('doctor/:date')
   @Auth(UserRole.PATIENT)
   findByDateDoctor(@Param('date') date: string, @ActiveUser() user: UserActiveInterface) {
     return this.appointmentsService.findByDateDoctor(new Date(date), user);
