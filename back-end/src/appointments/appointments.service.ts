@@ -205,12 +205,18 @@ export class AppointmentsService {
     id: string,
     updateAppointmentDto: UpdateAppointmentDto,
     user: UserActiveInterface
-  ){
+  ) {
+    
+    const doctor = await this.searchUser(user);
 
     const appointment = await this.findOne(id);
 
+    if (appointment.doctor_id !== doctor.id) {
+      throw new NotFoundException('Appointment not found');
+    }
+
     if (updateAppointmentDto.status === AppointmentStatus.CANCELLED) {
-      //TODO:LOGICA PARA ACTUALIZAR DATOS DE EL ESTADO
+      throw new NotFoundException('Appointment already cancelled');
     }
 
     return await this.appointmentRepository.save({
