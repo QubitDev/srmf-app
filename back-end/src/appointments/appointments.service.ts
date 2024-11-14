@@ -1,6 +1,6 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Like, Not, Repository } from 'typeorm';
+import { Between, DataSource, Like, Not, Repository } from 'typeorm';
 
 
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -21,6 +21,7 @@ export class AppointmentsService {
     private readonly doctorScheduleService: DoctorSchedulesService,
     private readonly doctorService: DoctorService,
     private readonly patientService: PatientService,
+    private readonly dataSource: DataSource,
   ) { }
 
   async getAvailableTimeSlots(
@@ -54,41 +55,56 @@ export class AppointmentsService {
     user: UserActiveInterface
   ): Promise<Appointment> {
 
-    const patient = await this.searchUser(user);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    const checkAvailability = await this.doctorScheduleService.checkAvailability(
-      createAppointmentDto.doctorId,
-      createAppointmentDto.appointmentDate,
-      createAppointmentDto.appointmentTime
-    );
+    try {
+      const patient = await this.searchUser(user);
 
-    if (checkAvailability) {
-      throw new ConflictException('Slot is not available');
+      const checkAvailability = await this.doctorScheduleService.checkAvailability(
+        createAppointmentDto.doctorId,
+        createAppointmentDto.appointmentDate,
+        createAppointmentDto.appointmentTime,
+        queryRunner
+      );
+  
+      if (checkAvailability) {
+        throw new ConflictException('Slot is not available');
+      }
+  
+  
+      const localDate = new Date(createAppointmentDto.appointmentDate);
+      localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+      localDate.setDate(localDate.getDate() + 1);
+      createAppointmentDto.appointmentDate = localDate;
+    
+      const appointment = this.appointmentRepository.create({
+        ...createAppointmentDto,
+        patient_id: patient.id,
+        doctor_id: createAppointmentDto.doctorId,
+        status: AppointmentStatus.PENDING
+      });
+  
+      const appointmentSave = await queryRunner.manager.save(appointment);
+  
+      await this.doctorScheduleService.updateAvailability(
+        createAppointmentDto.doctorId,
+        createAppointmentDto.appointmentDate,
+        createAppointmentDto.appointmentTime,
+        false,
+        queryRunner
+      );
+      
+      await queryRunner.commitTransaction();
+      return appointmentSave;
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException('Error al crear la cita');
+    } finally { 
+      await queryRunner.release();
     }
-
-
-    const localDate = new Date(createAppointmentDto.appointmentDate); 
-    localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
-    localDate.setDate(localDate.getDate() + 1);
-    createAppointmentDto.appointmentDate = localDate;
-  
-    const appointment = this.appointmentRepository.create({
-      ...createAppointmentDto,
-      patient_id: patient.id,
-      doctor_id: createAppointmentDto.doctorId ,
-      status: AppointmentStatus.PENDING
-    });
-
-    const appointmentSave = await this.appointmentRepository.save(appointment);
-
-    await this.doctorScheduleService.updateAvailability(
-      createAppointmentDto.doctorId,
-      createAppointmentDto.appointmentDate,
-      createAppointmentDto.appointmentTime,
-      false
-    );
-  
-    return appointmentSave ;
   }
 
   async findAll() {

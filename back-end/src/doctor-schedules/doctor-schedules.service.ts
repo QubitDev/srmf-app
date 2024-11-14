@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, QueryRunner, Repository } from 'typeorm';
 import { forwardRef } from '@nestjs/common';
 
 import { CreateDoctorScheduleDto } from './dto/create-doctor-schedule.dto';
@@ -102,16 +102,19 @@ export class DoctorSchedulesService {
     doctorId: string,
     date: Date,
     time: string,
-    isAvailable: boolean
+    isAvailable: boolean,
+    queryRunner?: QueryRunner
   ): Promise<void> {
 
-    const result = await this.scheduleRepository.update(
+    const manager = queryRunner ? queryRunner.manager : this.scheduleRepository.manager;
+
+    const result = await manager.update(this.scheduleRepository.target,
       {
         doctorId,
         dayOfWeek: date,
         startTime: time
       }, 
-      { isAvailable } 
+      { isAvailable }
     );
   
     if (result.affected === 0) {
@@ -150,10 +153,18 @@ private convertDateToTimeString(date: Date): string {
   }
 
 
-  async checkAvailability(doctorId: string, appointmentDate: Date, appointmentTime: string) {
+  async checkAvailability(
+    doctorId: string,
+    appointmentDate: Date,
+    appointmentTime: string,
+    queryRunner?: QueryRunner): Promise<boolean> {
+    
+    const manager = queryRunner ? queryRunner.manager : this.scheduleRepository.manager;
+    
     const startDate = new Date(appointmentDate); startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(appointmentDate); endDate.setHours(23, 59, 59, 999);
-    const schedule = await this.scheduleRepository.findOne({
+    
+    const schedule = await manager.findOne(this.scheduleRepository.target, {
       where: {
         doctorId,
         dayOfWeek: Between(startDate, endDate), 
@@ -185,9 +196,6 @@ private convertDateToTimeString(date: Date): string {
     const startDate = new Date(date); startDate.setHours(0, 0, 0, 0);
     const endDate = new Date(date); endDate.setHours(23, 59, 59, 999);
 
-    console.log('Doctor ID:', doctorId);
-    console.log('Formatted Date:', date);
-
     const repo = await this.scheduleRepository.find({
       where: {
         doctorId,
@@ -196,8 +204,6 @@ private convertDateToTimeString(date: Date): string {
       },
     });
 
-
-    console.log('hola daniel gay')
     return repo
   }
 }
