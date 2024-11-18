@@ -19,7 +19,7 @@ import{ Specialty} from '../interfaces/specialty.interface';
   providedIn: 'root'
 })
 export class AppointmentService {
-  private readonly baseUrl = 'http://localhost:3000';
+  private readonly baseUrl = 'https://srfm-back-end.onrender.com';
 
   constructor(private http: HttpClient) {}
 

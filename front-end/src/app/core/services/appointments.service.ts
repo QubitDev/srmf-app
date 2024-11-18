@@ -8,7 +8,7 @@ import { Appointment } from '../../pages/dashboard/interfaces/dashboard-interfac
   providedIn: 'root'
 })
 export class AppointmentsService {
-  private readonly baseUrl = 'http://localhost:3000';
+  private readonly baseUrl = 'https://srfm-back-end.onrender.com';
 
   constructor(private http: HttpClient) {}
 

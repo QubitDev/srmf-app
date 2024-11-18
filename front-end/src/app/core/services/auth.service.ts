@@ -19,7 +19,7 @@ import { PLATFORM_ID, inject as injectPlatform } from '@angular/core';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000';
+  private readonly API_URL = 'https://srfm-back-end.onrender.com';
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = injectPlatform(PLATFORM_ID);

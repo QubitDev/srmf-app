@@ -13,28 +13,41 @@ import { Specialty } from './specialties/entities/specialty.entity';
 import { Patients } from './patient/entities/patient.entity';
 import { Doctors } from './doctor/entities/doctor.entity';
 import { DoctorSchedule } from './doctor-schedules/entities/doctor-schedule.entity';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    type: 'postgres',
-    host: 'localhost',
-    port: 5433,
-    username: 'postgres',
-    password: 'postgres',
-    database: 'srfm_db',
-    entities: [
-      Users,
-      Doctors,
-      Patients, 
-      Specialty,
-      DoctorSchedule,
-      Appointment,
-      DoctorModule
-    ],
-    autoLoadEntities:true,
-    synchronize: true,
-    logging: true,
-  }),
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal:true,
+    }),
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.POSTGRES_PORT),
+      username: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASS,
+      database: process.env.POSTGRES_DATABASE,
+      entities: [
+        Users,
+        Doctors,
+        Patients, 
+        Specialty,
+        DoctorSchedule,
+        Appointment,
+        DoctorModule
+      ],
+      autoLoadEntities:true,
+      synchronize: true,
+      ssl: process.env.POSTGRES_SSL === "true",
+      extra: {
+        ssl:
+          process.env.POSTGRES_SSL === "true"
+            ? {
+                rejectUnauthorized: false,
+              }
+            : null,
+      },
+    }),
     DoctorModule, 
     PatientModule,
     AuthModule,
